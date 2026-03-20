@@ -28,9 +28,10 @@ from pipeline import (
     load_tracker,
     dedupe_within_batch,
     dedupe_against_tracker,
-    score_all,
+    classify_all,
     generate_report,
 )
+from state import load_state, save_state, update_state
 
 
 def main():
@@ -98,17 +99,26 @@ def main():
     all_leads = dedupe_against_tracker(all_leads, tracker)
     known = sum(1 for l in all_leads if l.get("tracker_match"))
     print(f"  Known companies in this batch: {known}")
-    
-    # ── Step 4: Score ──
-    print("\n⚡ Step 4: Scoring leads...")
-    all_leads = score_all(all_leads)
-    relevant = sum(1 for l in all_leads if l["relevance"] == "RELEVANT")
-    maybe = sum(1 for l in all_leads if l["relevance"] == "MAYBE")
-    skip = sum(1 for l in all_leads if l["relevance"] == "SKIP")
-    print(f"  RELEVANT: {relevant}  |  MAYBE: {maybe}  |  SKIP: {skip}")
-    
-    # ── Step 5: Generate report ──
-    print("\n📝 Step 5: Generating report...")
+
+    # ── Step 4: Compare against state (memory) ──
+    print("\n🧠 Step 4: Comparing against previous runs...")
+    old_state = load_state()
+    print(f"  Previous state has {len(old_state)} known roles")
+    new_state, all_leads = update_state(all_leads, old_state)
+    new_leads = sum(1 for l in all_leads if l.get("freshness") == "new")
+    still_open = sum(1 for l in all_leads if l.get("freshness") == "still_open")
+    print(f"  🆕 New: {new_leads}  |  Still open: {still_open}")
+
+    # ── Step 5: Classify ──
+    print("\n⚡ Step 5: Classifying leads...")
+    all_leads = classify_all(all_leads)
+    eng = sum(1 for l in all_leads if l["role_type"] == "engineering" and l["seniority"] in ("junior", "mid", "unclear"))
+    senior_eng = sum(1 for l in all_leads if l["role_type"] == "engineering" and l["seniority"] in ("senior", "lead"))
+    non_eng = sum(1 for l in all_leads if l["role_type"] == "non_engineering")
+    print(f"  Engineering (jr/mid): {eng}  |  Senior/lead eng: {senior_eng}  |  Non-eng signals: {non_eng}")
+
+    # ── Step 6: Generate report ──
+    print("\n📝 Step 6: Generating report...")
     fetch_stats = {
         "total_fetched": len(all_leads),
         "sources_ok": sources_ok,
@@ -117,10 +127,12 @@ def main():
     }
     report = generate_report(all_leads, fetch_stats)
     filepath = _save_report(report)
-    
-    # ── Step 6: Save raw leads as CSV (for later analysis) ──
+
+    # ── Step 7: Save state + raw leads CSV ──
+    save_state(new_state)
+    print(f"  State saved: {len(new_state)} roles tracked")
     _save_leads_csv(all_leads)
-    
+
     print("\n" + "=" * 60)
     print("  ✅ Done!")
     print(f"  Report: {filepath}")
@@ -144,8 +156,9 @@ def _save_leads_csv(leads: list[dict]) -> str:
     date_str = datetime.now().strftime("%Y-%m-%d")
     filepath = os.path.join(OUTPUT_DIR, f"leads-{date_str}.csv")
     
-    fieldnames = ["relevance", "score", "title", "company", "location", 
-                  "source", "date", "url", "tracker_match", "tracker_note"]
+    fieldnames = ["freshness", "role_type", "seniority", "web3_score", "title", "company",
+                  "location", "source", "source_type", "date", "first_seen", "last_seen",
+                  "times_seen", "url", "tracker_match", "tracker_note", "company_roles_count"]
     
     with open(filepath, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")

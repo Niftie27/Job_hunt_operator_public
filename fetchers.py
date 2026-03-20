@@ -92,6 +92,7 @@ def fetch_greenhouse(board_token: str, company_name: str) -> list[dict]:
             "source":   f"greenhouse/{board_token}",
             "date":     posted,
             "snippet":  _clean_html(j.get("content", "")),
+            "job_id":   str(j.get("id", "")),
         })
     return jobs
 
@@ -128,6 +129,7 @@ def fetch_ashby(company_slug: str, company_name: str) -> list[dict]:
             "source":   f"ashby/{company_slug}",
             "date":     posted,
             "snippet":  _clean_html(j.get("descriptionHtml", "") or j.get("description", "")),
+            "job_id":   str(j.get("id", "")),
         })
     return jobs
 
@@ -169,6 +171,7 @@ def fetch_lever(company_slug: str, company_name: str) -> list[dict]:
             "source":   f"lever/{company_slug}",
             "date":     posted,
             "snippet":  _clean_html(j.get("descriptionPlain", "") or j.get("description", "")),
+            "job_id":   str(j.get("id", "")),
         })
     return jobs
 
@@ -231,8 +234,9 @@ def fetch_web3career(keyword: str, label: str) -> list[dict]:
                 "location": location,
                 "url":      job_url,
                 "source":   f"web3career/{keyword}",
-                "date":     "",  # web3.career doesn't always show clean dates
+                "date":     "",
                 "snippet":  "",
+                "job_id":   "",
             })
     
     return jobs
@@ -269,12 +273,13 @@ def fetch_cryptojobslist(category: str, label: str) -> list[dict]:
         if title and len(title) > 5 and len(title) < 200:
             jobs.append({
                 "title":    title,
-                "company":  "Unknown",  # would need deeper parsing per-job
+                "company":  "Unknown",
                 "location": "Unknown",
                 "url":      job_url,
                 "source":   f"cryptojobslist/{category}",
                 "date":     "",
                 "snippet":  "",
+                "job_id":   "",
             })
     
     return jobs

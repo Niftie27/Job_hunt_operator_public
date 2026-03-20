@@ -93,7 +93,11 @@ SECONDARY_KEYWORDS = {
     "decentralized":     3,
 }
 
-# Negative signals: these reduce the score
+# ─── DEPRECATED (v0.5 only, not used by v0.6 pipeline) ────────────────
+# These were used when the script tried to guess RELEVANT/MAYBE/SKIP.
+# The v0.6 pipeline classifies by role_type + seniority + web3_score instead.
+# Kept here for reference in case you want to restore old behavior.
+
 NEGATIVE_KEYWORDS = {
     "staff":            -3,
     "principal":        -4,
@@ -118,10 +122,9 @@ NEGATIVE_KEYWORDS = {
     "7+ years":         -2,
 }
 
-# ─── SCORE THRESHOLDS ─────────────────────────────────────────────────
-SCORE_RELEVANT = 8       # score >= this → "RELEVANT"
-SCORE_MAYBE = 4          # score >= this → "MAYBE"
-                         # score < MAYBE → "SKIP"
+# ─── DEPRECATED (v0.5 only) ───────────────────────────────────────────
+SCORE_RELEVANT = 8       # no longer used by v0.6 pipeline
+SCORE_MAYBE = 4          # no longer used by v0.6 pipeline
 
 # ─── TRACKER FILE ─────────────────────────────────────────────────────
 TRACKER_PATH = "data/tracker.csv"

@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 .DS_Store
 .env
+data/state.json
+Job_hunt_operator.code-workspace
