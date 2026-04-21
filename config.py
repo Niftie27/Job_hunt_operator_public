@@ -52,7 +52,7 @@ SOURCES = [
     {"type": "career_page", "id": "https://layerzero.network/careers",          "name": "LayerZero"},
     {"type": "career_page", "id": "https://satoshilabs.com/careers",            "name": "SatoshiLabs"},
     {"type": "career_page", "id": "https://www.alchemy.com/careers",            "name": "Alchemy"},
-    {"type": "career_page", "id": "https://chainlinklabs.com/open-roles",       "name": "Chainlink"},
+    {"type": "career_page", "id": "https://chainlinklabs.com/careers",          "name": "Chainlink"},
     {"type": "career_page", "id": "https://www.kraken.com/careers",             "name": "Kraken"},
     {"type": "career_page", "id": "https://dydx.exchange/careers",              "name": "dYdX"},
     {"type": "career_page", "id": "https://opensea.io/careers",                 "name": "OpenSea"},

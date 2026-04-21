@@ -291,13 +291,13 @@ def _format_tags(lead: dict) -> str:
         tags.append("status:unknown")
 
     tags.append(lead.get("seniority", "?"))
-    tags.append(f"web3:{lead.get('web3_score', 0)}")
+    tags.append(f"scoring:{lead.get('web3_score', 0)}")
     tags.append(lead.get("source_type", "?"))
 
     if lead.get("_unclear_flag"):
-        tags.append("⚠ ROLE TYPE UNCLEAR")
+        tags.append("❓ ROLE TYPE UNCLEAR")
     if lead.get("tracker_match"):
-        tags.append("⚠ IN TRACKER")
+        tags.append("📇 IN TRACKER")
     if lead.get("company_roles_count", 1) > 1:
         tags.append(f"{lead['company_roles_count']} roles at company")
 
@@ -311,20 +311,44 @@ def _format_lead_full(lead: dict) -> list[str]:
     new_badge = "🆕 " if lead.get("freshness") == "new" else ""
     lines.append(f"### {new_badge}{title} — {company}")
 
-    tags = _format_tags(lead)
-    lines.append(f"`{tags}`")
+    # Line 1: status | seniority | score | source
+    freshness = lead.get("freshness", "?")
+    if freshness == "new":
+        status_str = "🆕 new"
+    elif freshness == "still_open":
+        times = lead.get("times_seen", 0)
+        status_str = f"seen {times}x since {lead.get('first_seen', '?')}"
+    else:
+        status_str = "unknown"
+    seniority = lead.get("seniority", "?")
+    score = lead.get("web3_score", 0)
+    source_type = lead.get("source_type", "?")
+    lines.append(f"`{status_str} | {seniority} | score:{score} | {source_type}`")
+
+    # Line 2: location
     lines.append(f"**Location:** {lead.get('location', 'Unknown')}")
 
+    # Line 3: notes (tracker + unclear flag)
+    notes = []
     if lead.get("tracker_match"):
-        lines.append(f"**Prior contact:** {lead.get('tracker_note', '')}")
+        note = lead.get("tracker_note", "")
+        notes.append(f"📇 in tracker{': ' + note if note else ''}")
+    if lead.get("_unclear_flag"):
+        notes.append("❓ role unclear")
+    if notes:
+        lines.append("  " + " · ".join(notes))
 
+    # Line 4: relevance keywords
     kw_summary = ", ".join(lead.get("web3_matched", [])[:6])
     if kw_summary:
-        lines.append(f"**Relevance signals:** {kw_summary}")
+        lines.append(f"**Signals:** {kw_summary}")
 
+    # Line 5: URL
     if lead.get("url"):
         lines.append(f"**Link:** {lead['url']}")
 
+    lines.append("")
+    lines.append("---")
     lines.append("")
     return lines
 
@@ -431,12 +455,15 @@ def generate_report(leads: list[dict], fetch_stats: dict) -> str:
         for comp, roles in sorted(companies.items()):
             tracker_flag = ""
             if any(r.get("tracker_match") for r in roles):
-                tracker_flag = " ⚠ IN TRACKER"
+                tracker_flag = " 📇"
             lines.append(f"**{comp}**{tracker_flag} ({len(roles)} non-eng roles)")
             for r in roles[:5]:
-                lines.extend(_format_lead_compact(r))
+                title = r.get("title", "Unknown")
+                loc = r.get("location", "?")
+                new_badge = "🆕 " if r.get("freshness") == "new" else ""
+                lines.append(f"• {new_badge}{title} ({loc})")
             if len(roles) > 5:
-                lines.append(f"  *(+ {len(roles) - 5} more)*")
+                lines.append(f"*(+ {len(roles) - 5} more)*")
             lines.append("")
 
     # ── Errors ──

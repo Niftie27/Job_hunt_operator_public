@@ -178,10 +178,34 @@ def fetch_career_page(url: str, company_name: str) -> list[dict]:
                 continue
 
             seen_urls.add(abs_url)
+
+            # Try to extract location from multi-line link text
+            # Common patterns: "Title\nLocation", "Title · Location"
+            raw_text = text
+            location = "Unknown"
+            lines = [l.strip() for l in raw_text.split("\n") if l.strip()]
+            if len(lines) >= 2:
+                title_clean = lines[0]
+                for line in lines[1:]:
+                    line_lower = line.lower()
+                    if any(loc in line_lower for loc in [
+                        "remote", "hybrid", "onsite", "on-site", "anywhere",
+                        "new york", "san francisco", "london", "berlin", "paris",
+                        "singapore", "dubai", "tokyo", "toronto", "vancouver",
+                        "amsterdam", "zurich", "austin", "seattle", "chicago",
+                        "boston", "miami", "los angeles", "bangalore", "poland",
+                        "germany", "france", "uk", "usa", "us", "eu", "apac",
+                        "emea", "americas", "europe", "asia", "worldwide", "global",
+                    ]):
+                        location = line
+                        break
+            else:
+                title_clean = raw_text
+
             jobs.append({
-                "title":    text,
+                "title":    title_clean,
                 "company":  company_name,
-                "location": "Unknown",
+                "location": location,
                 "url":      abs_url,
                 "source":   f"playwright/{slug}",
                 "date":     "",

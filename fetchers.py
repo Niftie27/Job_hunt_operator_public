@@ -218,7 +218,11 @@ def fetch_web3career(keyword: str, label: str) -> list[dict]:
         # Extract URL
         url_match = re.search(r'href="(/[^"]*)"', row)
         job_url = f"https://web3.career{url_match.group(1)}" if url_match else ""
-        
+
+        _BLOCKED_AGGREGATOR_URLS = ["cocuma.cz"]
+        if any(blocked in job_url for blocked in _BLOCKED_AGGREGATOR_URLS):
+            continue
+
         # Extract company
         comp_match = re.search(r'class="[^"]*company[^"]*"[^>]*>(.*?)</', row, re.DOTALL)
         company = _clean_html(comp_match.group(1)) if comp_match else "Unknown"
@@ -263,12 +267,15 @@ def fetch_cryptojobslist(category: str, label: str) -> list[dict]:
         re.DOTALL
     )
     
+    _BLOCKED_AGGREGATOR_URLS = ["cocuma.cz"]
     seen_urls = set()
     for job_url, link_text in links[:30]:
         if job_url in seen_urls:
             continue
+        if any(blocked in job_url for blocked in _BLOCKED_AGGREGATOR_URLS):
+            continue
         seen_urls.add(job_url)
-        
+
         title = _clean_html(link_text)
         if title and len(title) > 5 and len(title) < 200:
             jobs.append({
