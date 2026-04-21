@@ -18,17 +18,17 @@ SOURCES = [
     {"type": "greenhouse", "id": "bcbgroup",            "name": "BCB Group"},
     {"type": "greenhouse", "id": "bloxstaking",         "name": "Blox Staking / SSV Labs"},
     {"type": "greenhouse", "id": "nansen",              "name": "Nansen"},
-    {"type": "greenhouse", "id": "avalabs",             "name": "Ava Labs (Avalanche)"},
-    {"type": "greenhouse", "id": "wormholefoundation",  "name": "Wormhole Foundation"},
+    # {"type": "greenhouse", "id": "avalabs",            "name": "Ava Labs (Avalanche)"},   # 404 on 2026-04-21, investigate later
+    # {"type": "greenhouse", "id": "wormholefoundation", "name": "Wormhole Foundation"},    # 404 on 2026-04-21, investigate later
     {"type": "greenhouse", "id": "woofi",               "name": "WOOFi"},
-    {"type": "greenhouse", "id": "chainalysis",         "name": "Chainalysis"},
+    # {"type": "greenhouse", "id": "chainalysis",        "name": "Chainalysis"},            # 404 on 2026-04-21, investigate later
     {"type": "greenhouse", "id": "consensys",           "name": "ConsenSys"},
-    {"type": "greenhouse", "id": "offchainlabs",        "name": "Offchain Labs (Arbitrum)"},
+    # {"type": "greenhouse", "id": "offchainlabs",       "name": "Offchain Labs (Arbitrum)"},  # 404 on 2026-04-21, investigate later
 
     # ── Ashby boards ──
     {"type": "ashby", "id": "nethermind",    "name": "Nethermind"},
     {"type": "ashby", "id": "Zircuit",       "name": "Zircuit"},
-    {"type": "ashby", "id": "plume-network", "name": "Plume Network"},
+    # {"type": "ashby", "id": "plume-network", "name": "Plume Network"},                   # 404 on 2026-04-21, investigate later
     {"type": "ashby", "id": "wormholelabs",  "name": "Wormhole Labs"},
 
     # ── Lever boards ──
@@ -36,7 +36,7 @@ SOURCES = [
 
     # ── New Lever boards ──
     {"type": "lever", "id": "immutable",      "name": "Immutable"},
-    {"type": "lever", "id": "axiomzen",       "name": "Dapper Labs"},
+    # {"type": "lever", "id": "axiomzen",       "name": "Dapper Labs"},                    # 404 on 2026-04-21, investigate later
     {"type": "lever", "id": "anchorage",      "name": "Anchorage Digital"},
 
     # ── New Ashby boards ──
