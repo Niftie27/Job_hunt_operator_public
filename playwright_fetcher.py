@@ -60,6 +60,15 @@ def _shutdown_browser():
 
 # ─── URL / text filters ───────────────────────────────────────────────
 
+BLOCKED_DOMAINS = [
+    "youtube.com", "youtu.be", "twitter.com", "x.com",
+    "linkedin.com", "github.com", "medium.com", "discord.com",
+    "discord.gg", "t.me", "telegram.org", "reddit.com",
+    "facebook.com", "instagram.com", "tiktok.com",
+    "docs.google.com", "drive.google.com", "apple.com",
+    "play.google.com", "apps.apple.com",
+]
+
 # Path segments that strongly suggest a job-posting URL
 _JOB_PATH_RE = re.compile(
     r"/(jobs?|careers?|positions?|roles?|openings?|apply|join|vacancies|"
@@ -79,6 +88,10 @@ _JOB_TITLE_WORDS = re.compile(
 
 def _looks_like_job_link(href: str, text: str) -> bool:
     if not href or not text:
+        return False
+    # Block known non-career external domains
+    parsed = urlparse(href) if href.startswith("http") else None
+    if parsed and any(d in parsed.netloc.lower() for d in BLOCKED_DOMAINS):
         return False
     text = text.strip()
     if len(text) < 3 or len(text) > 200:

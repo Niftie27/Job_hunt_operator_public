@@ -1,121 +1,63 @@
-# JH Operator — v0.5 Intake Loop
+# Job Hunt Operator
 
-## What this does
-Fetches job listings from crypto company career pages, checks them against your outreach tracker, scores them by relevance, and gives you a daily report.
+Automated job discovery pipeline for blockchain/web3 engineering roles. Fetches from 42+ sources, classifies by role type and seniority, tracks state across runs, and produces daily reports.
 
-**No AI, no agents, no login needed.** Just Python scripts hitting public APIs.
+## How it works
+
+`python3 run.py` does everything:
+
+1. Fetches jobs from Greenhouse, Ashby, Lever APIs (structured data)
+2. Fetches jobs from career pages via Playwright (JS-rendered HTML)
+3. Fetches jobs from web3.career and CryptoJobsList (aggregators)
+4. Removes duplicate listings within the batch
+5. Checks each lead against your outreach tracker (data/tracker.csv)
+6. Compares against previous runs (data/state.json) — marks new vs still_open
+7. Classifies: role type (engineering/non_engineering/unclear), seniority (junior/mid/senior/lead), web3 relevance score
+8. Generates a 3-section daily report + leads CSV
+
+## Report sections
+
+1. **Engineering / Dev Roles** — junior/mid engineering roles with web3 relevance
+2. **Senior / Lead Engineering Roles** — your call: direct apply, outreach trigger, or company signal
+3. **Company Hiring Signals** — non-engineering roles at crypto companies (shows who's actively hiring)
+
+New leads get 🆕 badge. Each lead tagged with: freshness status, seniority, web3 score, source type (ats/aggregator), tracker match, company activity count.
 
 ## Files
+
 ```
-jh-operator/
-├── config.py       ← Edit this to add/remove sources and tune scoring
-├── fetchers.py     ← Talks to Greenhouse, Ashby, Lever, web3.career, CryptoJobsList
-├── pipeline.py     ← Deduplication, scoring, report generation
-├── run.py          ← The one script you run: python3 run.py
+├── config.py              ← sources list + keyword scoring weights
+├── fetchers.py            ← Greenhouse/Ashby/Lever/Getro/web3career/cryptojobslist
+├── playwright_fetcher.py  ← career page scraper (headless Chromium)
+├── pipeline.py            ← classification + report generation
+├── run.py                 ← main runner (this is what you execute)
+├── state.py               ← JSON persistence (first_seen/last_seen/times_seen)
 ├── data/
-│   └── tracker.csv ← Your outreach tracker (copy from your actual tracker)
+│   ├── tracker.csv        ← outreach history (manually updated)
+│   └── state.json         ← pipeline memory (auto-generated, gitignored)
+├── docs/                  ← reference files, source library, setup guide
+├── tools/                 ← one-time scripts (ATS detection, etc.)
 └── output/
-    ├── daily-brief-YYYY-MM-DD.md   ← The readable report
-    └── leads-YYYY-MM-DD.csv        ← All scored leads as CSV
+    ├── briefs/            ← daily-brief-YYYY-MM-DD.md
+    ├── leads/             ← leads-YYYY-MM-DD.csv
+    └── scans/             ← one-time scan results
 ```
 
-## Setup on VPS
+## Adding sources
 
-```bash
-# 1. Create the project directory (or clone from git)
-mkdir -p ~/jh-operator/data ~/jh-operator/output
-cd ~/jh-operator
+Edit `config.py` SOURCES list:
 
-# 2. Copy the scripts (config.py, fetchers.py, pipeline.py, run.py)
-#    If using git: git clone <your-repo> .
-
-# 3. Copy your current tracker
-cp /path/to/JH_Outreach_Tracker.csv data/tracker.csv
-
-# 4. Test it
-python3 run.py
-
-# 5. (Optional) Set up a daily cron job
-crontab -e
-# Add this line to run every morning at 8:00 AM:
-# 0 8 * * * cd ~/jh-operator && python3 run.py >> output/cron.log 2>&1
-```
+- Greenhouse: `{"type": "greenhouse", "id": "SLUG", "name": "Company"}`
+- Ashby: `{"type": "ashby", "id": "SLUG", "name": "Company"}`
+- Lever: `{"type": "lever", "id": "SLUG", "name": "Company"}`
+- Career page: `{"type": "career_page", "id": "https://company.com/careers", "name": "Company"}`
 
 ## Requirements
-- Python 3.10+ (already on most VPS)
-- No pip packages needed — uses only Python standard library
-- Internet access to reach Greenhouse/Ashby/Lever APIs
 
-## How to add more sources
+- Python 3.10+
+- Playwright + Chromium: `pip install playwright && playwright install chromium`
+- System deps (WSL/Linux): `sudo playwright install-deps chromium`
 
-Open `config.py` and add to the SOURCES list:
+## Design principle
 
-```python
-# If the company uses Greenhouse (URL looks like job-boards.greenhouse.io/SLUG):
-{"type": "greenhouse", "id": "SLUG", "name": "Company Name"},
-
-# If the company uses Ashby (URL looks like jobs.ashbyhq.com/SLUG):
-{"type": "ashby", "id": "SLUG", "name": "Company Name"},
-
-# If the company uses Lever (URL looks like jobs.lever.co/SLUG):
-{"type": "lever", "id": "SLUG", "name": "Company Name"},
-```
-
-### How to find which ATS a company uses
-1. Go to their careers page
-2. Click "Apply" on any job
-3. Look at the URL:
-   - `boards.greenhouse.io/...` → Greenhouse
-   - `jobs.ashbyhq.com/...` → Ashby  
-   - `jobs.lever.co/...` → Lever
-   - Something else → needs a custom fetcher (for later)
-
-## How scoring works
-
-Every job title + description is checked against keyword lists in `config.py`.
-
-- **Primary keywords** (solidity, smart contract, blockchain, web3, defi...) = high points
-- **Secondary keywords** (react, node.js, typescript, backend...) = some points
-- **Negative keywords** (marketing, sales, VP, director, 10+ years...) = minus points
-
-Total score determines classification:
-- Score ≥ 8 → **RELEVANT** (green in report)
-- Score ≥ 4 → **MAYBE** (blue in report)
-- Score < 4 → **SKIP** (not shown in detail)
-
-You can tune all weights and thresholds in `config.py`.
-
-## What the report looks like
-
-```
-# JH Daily Brief — 2026-03-20 13:01
-
-**Total leads found:** 47
-**Relevant:** 8 (5 new, 3 known)
-**Maybe:** 12 (10 new)
-**Skipped:** 27
-
----
-## 🟢 New Relevant Leads
-
-### Smart Contract Engineer — Nansen
-- **Score:** 42  |  **Location:** Remote
-- **Why relevant:** +10 solidity, +10 smart contract, +7 defi, +6 ethereum
-- **Link:** https://...
-
----
-## 🟡 Relevant — Already in Tracker
-*(Companies you've contacted before with new roles)*
-
-### Solidity Developer — Animoca Brands
-- **Score:** 25  |  **Location:** Remote
-- **Prior status:** sent / tracked — follow-up sent
-```
-
-## Next steps (what to build after this works)
-
-1. **More sources**: Add Getro boards, more Greenhouse/Ashby slugs from your source list
-2. **Persistent state**: Save leads to SQLite so you can track what you've already seen
-3. **OpenClaw integration**: Set up as a cron-triggered skill in OpenClaw workspace
-4. **Fit triage**: Use the job description to do deeper fit assessment  
-5. **Draft prep**: Generate outreach drafts for RELEVANT leads
+The script surfaces and sorts. The human decides the action.
