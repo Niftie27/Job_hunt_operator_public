@@ -67,6 +67,7 @@ BLOCKED_DOMAINS = [
     "facebook.com", "instagram.com", "tiktok.com",
     "docs.google.com", "drive.google.com", "apple.com",
     "play.google.com", "apps.apple.com",
+    "cocuma.cz",  # aggregator that surfaces 404 redirect pages
 ]
 
 # Path segments that strongly suggest a job-posting URL
@@ -113,12 +114,13 @@ def _company_slug(name: str) -> str:
 
 # ─── Main fetcher ─────────────────────────────────────────────────────
 
-def fetch_career_page(url: str, company_name: str) -> list[dict]:
+def fetch_career_page(url: str, company_name: str, default_location: str = "") -> list[dict]:
     """
     Open a career page with Playwright, extract job listing links.
 
-    url:          Full URL of the careers page (the source id in config).
-    company_name: Display name used in pipeline output.
+    url:              Full URL of the careers page (the source id in config).
+    company_name:     Display name used in pipeline output.
+    default_location: Fallback location when extraction returns "Unknown".
     """
     slug = _company_slug(company_name)
     browser = _get_browser()
@@ -201,6 +203,9 @@ def fetch_career_page(url: str, company_name: str) -> list[dict]:
                         break
             else:
                 title_clean = raw_text
+
+            if location == "Unknown" and default_location:
+                location = default_location
 
             jobs.append({
                 "title":    title_clean,

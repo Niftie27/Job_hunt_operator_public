@@ -283,8 +283,11 @@ def _format_lead_full(lead: dict) -> list[str]:
     # H3: title only
     lines.append(f"### {lead.get('title', 'Unknown')}")
 
-    # Company | Location
-    lines.append(f"**Company:** {lead.get('company', 'Unknown')}  |  **Location:** {lead.get('location', 'Unknown')}")
+    # Company | Location | Comp (optional)
+    comp_loc = f"**Company:** {lead.get('company', 'Unknown')}  |  **Location:** {lead.get('location', 'Unknown')}"
+    if lead.get("compensation"):
+        comp_loc += f"  |  **Comp:** {lead['compensation']}"
+    lines.append(comp_loc)
 
     # Status | Level | Score | Source
     freshness = lead.get("freshness", "?")

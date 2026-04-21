@@ -36,7 +36,7 @@ SOURCES = [
 
     # ── New Lever boards ──
     {"type": "lever", "id": "immutable",      "name": "Immutable"},
-    # {"type": "lever", "id": "axiomzen",       "name": "Dapper Labs"},                    # 404 on 2026-04-21, investigate later
+    # {"type": "lever", "id": "axiomzen",       "name": "Dapper Labs"},  # 404 on 2026-04-21 and 2026-04-22 — slug likely stale
     {"type": "lever", "id": "anchorage",      "name": "Anchorage Digital"},
 
     # ── New Ashby boards ──
@@ -50,7 +50,7 @@ SOURCES = [
     # ── Career pages (Playwright scraper) ──
     {"type": "career_page", "id": "https://phantom.app/careers",               "name": "Phantom"},
     {"type": "career_page", "id": "https://layerzero.network/careers",          "name": "LayerZero"},
-    {"type": "career_page", "id": "https://satoshilabs.com/careers",            "name": "SatoshiLabs"},
+    {"type": "career_page", "id": "https://satoshilabs.com/careers",            "name": "SatoshiLabs", "default_location": "Prague, Czech Republic"},
     {"type": "career_page", "id": "https://www.alchemy.com/careers",            "name": "Alchemy"},
     {"type": "career_page", "id": "https://chainlinklabs.com/careers",          "name": "Chainlink"},
     {"type": "career_page", "id": "https://www.kraken.com/careers",             "name": "Kraken"},

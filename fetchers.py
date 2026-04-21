@@ -223,24 +223,43 @@ def fetch_web3career(keyword: str, label: str) -> list[dict]:
         if any(blocked in job_url for blocked in _BLOCKED_AGGREGATOR_URLS):
             continue
 
-        # Extract company
+        # Extract company — try class="company", then <a href="/company/...">
         comp_match = re.search(r'class="[^"]*company[^"]*"[^>]*>(.*?)</', row, re.DOTALL)
+        if not comp_match:
+            comp_match = re.search(r'href="/company/[^"]*"[^>]*>(.*?)</', row, re.DOTALL)
+        if not comp_match:
+            comp_match = re.search(r'data-company=["\']([^"\']+)["\']', row)
         company = _clean_html(comp_match.group(1)) if comp_match else "Unknown"
-        
-        # Extract location
+
+        # Extract location — class="location", then <p>/<td> after "in " keyword
         loc_match = re.search(r'class="[^"]*location[^"]*"[^>]*>(.*?)</', row, re.DOTALL)
+        if not loc_match:
+            loc_match = re.search(r'\bin\s+([A-Z][A-Za-z ,]+)(?:<|,|\s*\|)', row)
         location = _clean_html(loc_match.group(1)) if loc_match else "Unknown"
-        
+
+        # Extract compensation — $XXk, $XX-XXk, USD/EUR ranges
+        comp_pay = ""
+        pay_match = re.search(
+            r'(\$[\d,]+[kK]?\s*[-–]\s*\$?[\d,]+[kK]?'
+            r'|\$[\d,]+[kK]?'
+            r'|€[\d,]+[kK]?\s*[-–]\s*€?[\d,]+[kK]?'
+            r'|[\d,]+[kK]?\s*[-–]\s*[\d,]+[kK]?\s*(?:USD|EUR))',
+            row,
+        )
+        if pay_match:
+            comp_pay = pay_match.group(1).strip()
+
         if title and len(title) > 3:
             jobs.append({
-                "title":    title,
-                "company":  company,
-                "location": location,
-                "url":      job_url,
-                "source":   f"web3career/{keyword}",
-                "date":     "",
-                "snippet":  "",
-                "job_id":   "",
+                "title":        title,
+                "company":      company,
+                "location":     location,
+                "url":          job_url,
+                "source":       f"web3career/{keyword}",
+                "date":         "",
+                "snippet":      "",
+                "job_id":       "",
+                "compensation": comp_pay,
             })
     
     return jobs
@@ -393,7 +412,7 @@ def fetch_source(source: dict) -> list[dict]:
         return fetch_getro(src_id, name)
     elif src_type == "career_page":
         from playwright_fetcher import fetch_career_page
-        return fetch_career_page(src_id, name)
+        return fetch_career_page(src_id, name, source.get("default_location", ""))
     else:
         print(f"  ⚠ Unknown source type: {src_type}")
         return []
