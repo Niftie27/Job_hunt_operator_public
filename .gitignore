@@ -1,4 +1,6 @@
-output/
+output/briefs/
+output/leads/
+output/scans/
 __pycache__/
 *.pyc
 .DS_Store

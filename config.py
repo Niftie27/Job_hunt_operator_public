@@ -34,6 +34,19 @@ SOURCES = [
     # ── Lever boards ──
     {"type": "lever", "id": "moonpay", "name": "MoonPay"},
 
+    # ── New Lever boards ──
+    {"type": "lever", "id": "immutable",      "name": "Immutable"},
+    {"type": "lever", "id": "axiomzen",       "name": "Dapper Labs"},
+    {"type": "lever", "id": "anchorage",      "name": "Anchorage Digital"},
+
+    # ── New Ashby boards ──
+    # {"type": "ashby", "id": "Rubicon",        "name": "Rubicon"},        # 404 on 2026-04-21, investigate later
+    # {"type": "ashby", "id": "zealy",          "name": "Zealy"},          # 404 on 2026-04-21, investigate later
+    {"type": "ashby", "id": "injective-labs", "name": "Injective"},
+
+    # ── Getro boards ──
+    # {"type": "getro", "id": "wormhole",       "name": "Wormhole Ecosystem (Getro)"},  # 404 on 2026-04-21, investigate later
+
     # ── Crypto job boards ──
     # These search across many companies at once
     {"type": "web3career",      "id": "solidity",           "name": "web3.career (solidity)"},

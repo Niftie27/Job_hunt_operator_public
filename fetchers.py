@@ -285,6 +285,80 @@ def fetch_cryptojobslist(category: str, label: str) -> list[dict]:
     return jobs
 
 
+# ─── GETRO ────────────────────────────────────────────────────────────
+# Getro is an ecosystem-level job board platform (e.g. Wormhole ecosystem).
+# URL pattern: https://{slug}.getro.com/jobs
+# JSON API (best-effort): https://{slug}.getro.com/api/v2/jobs?page=1&per_page=100
+
+def fetch_getro(slug: str, label: str) -> list[dict]:
+    """
+    Fetch jobs from a Getro-hosted ecosystem board.
+
+    slug: subdomain from the URL, e.g. "wormhole" from wormhole.getro.com
+    label: display label for the source
+    """
+    api_url = f"https://{slug}.getro.com/api/v2/jobs?page=1&per_page=100"
+    data = _fetch_json(api_url)
+
+    jobs = []
+    if isinstance(data, dict) and "data" in data:
+        for j in data["data"]:
+            company_field = j.get("company", {})
+            if isinstance(company_field, dict):
+                company = company_field.get("name", "Unknown") or "Unknown"
+            else:
+                company = str(company_field) if company_field else "Unknown"
+
+            posted = (j.get("published_at") or "")[:10]
+
+            jobs.append({
+                "title":    j.get("title", "Unknown"),
+                "company":  company,
+                "location": j.get("location", "") or "Unknown",
+                "url":      j.get("url", ""),
+                "source":   f"getro/{slug}",
+                "date":     posted,
+                "snippet":  _clean_html(j.get("description", "")),
+                "job_id":   str(j.get("id", "")),
+            })
+        return jobs
+
+    # Fallback: scrape the public /jobs page for links matching /jobs/{slug}
+    html = _fetch_html(f"https://{slug}.getro.com/jobs")
+    if not html:
+        return []
+
+    links = re.findall(
+        r'<a[^>]*href="(/jobs/[^"#?]+)"[^>]*>(.*?)</a>',
+        html,
+        re.DOTALL | re.IGNORECASE,
+    )
+
+    seen = set()
+    for path, link_text in links[:100]:
+        job_url = f"https://{slug}.getro.com{path}"
+        if job_url in seen:
+            continue
+        seen.add(job_url)
+
+        title = _clean_html(link_text)
+        if not title or len(title) < 3 or len(title) > 200:
+            continue
+
+        jobs.append({
+            "title":    title,
+            "company":  "Unknown",
+            "location": "Unknown",
+            "url":      job_url,
+            "source":   f"getro/{slug}",
+            "date":     "",
+            "snippet":  "",
+            "job_id":   path.rsplit("/", 1)[-1],
+        })
+
+    return jobs
+
+
 # ─── DISPATCHER ───────────────────────────────────────────────────────
 
 def fetch_source(source: dict) -> list[dict]:
@@ -308,6 +382,8 @@ def fetch_source(source: dict) -> list[dict]:
         return fetch_web3career(src_id, name)
     elif src_type == "cryptojobslist":
         return fetch_cryptojobslist(src_id, name)
+    elif src_type == "getro":
+        return fetch_getro(src_id, name)
     else:
         print(f"  ⚠ Unknown source type: {src_type}")
         return []

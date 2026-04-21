@@ -141,9 +141,10 @@ def main():
 
 def _save_report(report: str) -> str:
     """Save the markdown report to the output directory."""
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    briefs_dir = os.path.join(OUTPUT_DIR, "briefs")
+    os.makedirs(briefs_dir, exist_ok=True)
     date_str = datetime.now().strftime("%Y-%m-%d")
-    filepath = os.path.join(OUTPUT_DIR, f"daily-brief-{date_str}.md")
+    filepath = os.path.join(briefs_dir, f"daily-brief-{date_str}.md")
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(report)
     print(f"  Saved: {filepath}")
@@ -152,9 +153,10 @@ def _save_report(report: str) -> str:
 
 def _save_leads_csv(leads: list[dict]) -> str:
     """Save all scored leads as a CSV for reference / future imports."""
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    leads_dir = os.path.join(OUTPUT_DIR, "leads")
+    os.makedirs(leads_dir, exist_ok=True)
     date_str = datetime.now().strftime("%Y-%m-%d")
-    filepath = os.path.join(OUTPUT_DIR, f"leads-{date_str}.csv")
+    filepath = os.path.join(leads_dir, f"leads-{date_str}.csv")
     
     fieldnames = ["freshness", "role_type", "seniority", "web3_score", "title", "company",
                   "location", "source", "source_type", "date", "first_seen", "last_seen",
