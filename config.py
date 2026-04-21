@@ -68,6 +68,23 @@ SOURCES = [
     {"type": "career_page", "id": "https://frax.finance/careers",               "name": "Frax"},
     {"type": "career_page", "id": "https://blaize.tech/careers/",               "name": "Blaize"},
 
+    # ── Tracker-derived sources (v0.9.6 discovery) ──
+    {"type": "lever",      "id": "tokenmetrics",   "name": "Token Metrics"},
+    {"type": "lever",      "id": "animocabrands",  "name": "Animoca Brands"},
+    {"type": "greenhouse", "id": "bitpanda",        "name": "Bitpanda"},
+    {"type": "greenhouse", "id": "b2c2",            "name": "B2c2"},
+    {"type": "greenhouse", "id": "pact",            "name": "Pact Labs"},
+    {"type": "ashby",      "id": "odin",            "name": "Odin"},
+    {"type": "ashby",      "id": "somnia",          "name": "Somnia"},
+    {"type": "greenhouse", "id": "make",            "name": "Make"},
+
+    {"type": "career_page", "id": "https://1password.com/careers",           "name": "1Password"},
+    {"type": "career_page", "id": "https://www.paxos.com/careers",           "name": "Paxos"},
+    {"type": "career_page", "id": "https://www.improbable.io/careers",       "name": "Improbable"},
+    {"type": "career_page", "id": "https://keyrock.com/careers/",            "name": "Keyrock"},
+    {"type": "career_page", "id": "https://www.modular.com/company/careers", "name": "Modular"},
+    {"type": "career_page", "id": "https://devbrother.com/career",           "name": "DevBrother"},
+
     # ── Crypto job boards ──
     # These search across many companies at once
     {"type": "web3career",      "id": "solidity",           "name": "web3.career (solidity)"},
