@@ -47,6 +47,27 @@ SOURCES = [
     # ── Getro boards ──
     # {"type": "getro", "id": "wormhole",       "name": "Wormhole Ecosystem (Getro)"},  # 404 on 2026-04-21, investigate later
 
+    # ── Career pages (Playwright scraper) ──
+    {"type": "career_page", "id": "https://phantom.app/careers",               "name": "Phantom"},
+    {"type": "career_page", "id": "https://layerzero.network/careers",          "name": "LayerZero"},
+    {"type": "career_page", "id": "https://satoshilabs.com/careers",            "name": "SatoshiLabs"},
+    {"type": "career_page", "id": "https://www.alchemy.com/careers",            "name": "Alchemy"},
+    {"type": "career_page", "id": "https://chainlinklabs.com/open-roles",       "name": "Chainlink"},
+    {"type": "career_page", "id": "https://www.kraken.com/careers",             "name": "Kraken"},
+    {"type": "career_page", "id": "https://dydx.exchange/careers",              "name": "dYdX"},
+    {"type": "career_page", "id": "https://opensea.io/careers",                 "name": "OpenSea"},
+    {"type": "career_page", "id": "https://www.quicknode.com/careers",          "name": "QuickNode"},
+    {"type": "career_page", "id": "https://www.gemini.com/careers",             "name": "Gemini"},
+    {"type": "career_page", "id": "https://dfinity.org/careers",                "name": "DFINITY"},
+    {"type": "career_page", "id": "https://zerion.io/careers",                  "name": "Zerion"},
+    {"type": "career_page", "id": "https://info.arkm.com/careers",              "name": "Arkham"},
+    {"type": "career_page", "id": "https://www.falconx.io/careers",             "name": "FalconX"},
+    {"type": "career_page", "id": "https://www.blockchain.com/careers",         "name": "Blockchain.com"},
+    {"type": "career_page", "id": "https://tokenterminal.com/careers",          "name": "Token Terminal"},
+    {"type": "career_page", "id": "https://taiko.xyz/careers",                  "name": "Taiko"},
+    {"type": "career_page", "id": "https://frax.finance/careers",               "name": "Frax"},
+    {"type": "career_page", "id": "https://blaize.tech/careers/",               "name": "Blaize"},
+
     # ── Crypto job boards ──
     # These search across many companies at once
     {"type": "web3career",      "id": "solidity",           "name": "web3.career (solidity)"},
