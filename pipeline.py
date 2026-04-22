@@ -55,50 +55,71 @@ def dedupe_against_tracker(leads: list[dict], tracker: list[dict]) -> list[dict]
     """
     Check if the company already appears in the tracker.
     A match does NOT mean skip — it means you have history.
-    When multiple rows exist for a company, the most recent (by date) wins;
-    fallback is the last row in CSV order.
+    When multiple rows exist for a company, merge contact fields across all rows
+    (most recent row wins per field, falls back to older rows for missing data).
     """
-    # Group all rows by normalised company name, preserving CSV order
     from collections import defaultdict
+
+    def _is_li_profile(url: str) -> bool:
+        u = url.lower()
+        return "linkedin.com/in/" in u or "linkedin.com/pub/" in u
+
+    def _merge_tracker_rows(rows: list[dict]) -> dict:
+        rows_sorted = sorted(rows, key=lambda r: (r.get("date") or ""), reverse=True)
+        merged = {
+            "person": "", "person_role": "", "contact_email": "",
+            "person_url": "", "fu_person": "", "fu_url": "", "fu_email": "",
+            "status": "", "stage": "",
+        }
+        for row in rows_sorted:
+            if not merged["person"] and row.get("person", "").strip():
+                merged["person"] = row["person"].strip()
+                role_val = row.get("role", "").strip()
+                merged["person_role"] = "" if "|" in role_val else role_val
+            if not merged["contact_email"] and row.get("contact_email", "").strip():
+                merged["contact_email"] = row["contact_email"].strip()
+            if not merged["person_url"]:
+                url = row.get("url", "").strip()
+                if _is_li_profile(url):
+                    merged["person_url"] = url
+            if not merged["fu_person"] and row.get("fu_person", "").strip():
+                merged["fu_person"] = row["fu_person"].strip()
+            if not merged["fu_email"] and row.get("fu_email", "").strip():
+                merged["fu_email"] = row["fu_email"].strip()
+            if not merged["fu_url"]:
+                url = row.get("fu_url", "").strip()
+                if _is_li_profile(url):
+                    merged["fu_url"] = url
+            if not merged["status"]:
+                merged["status"] = row.get("pipeline_status", "").strip()
+            if not merged["stage"]:
+                merged["stage"] = row.get("stage_label", "").strip()
+        return merged
+
     company_rows: dict[str, list[dict]] = defaultdict(list)
     for row in tracker:
         comp = _normalize_company(row.get("company", ""))
         if comp:
             company_rows[comp].append(row)
 
-    # Pick the best row per company: most recent by date, else last in CSV
-    def _best_row(rows: list[dict]) -> dict:
-        dated = []
-        for r in rows:
-            raw = (r.get("date") or "").strip()[:10]
-            try:
-                from datetime import datetime
-                dated.append((datetime.strptime(raw, "%Y-%m-%d"), r))
-            except ValueError:
-                pass
-        if dated:
-            return max(dated, key=lambda x: x[0])[1]
-        return rows[-1]
-
     tracker_companies = {
-        comp: _best_row(rows)
+        comp: _merge_tracker_rows(rows)
         for comp, rows in company_rows.items()
     }
 
     for lead in leads:
         norm = _normalize_company(lead.get("company", ""))
         if norm in tracker_companies:
-            row = tracker_companies[norm]
+            m = tracker_companies[norm]
             lead["tracker_match"]         = True
-            lead["tracker_note"]          = (
-                f"{row.get('pipeline_status', 'unknown')} — {row.get('stage_label', '')}"
-            )
-            lead["tracker_contact_email"] = row.get("contact_email", "").strip()
-            lead["tracker_person"]        = row.get("person", "").strip()
-            lead["tracker_person_url"]    = row.get("url", "").strip()
-            lead["tracker_fu_person"]     = row.get("fu_person", "").strip()
-            lead["tracker_fu_url"]        = row.get("fu_url", "").strip()
-            lead["tracker_fu_email"]      = row.get("fu_email", "").strip()
+            lead["tracker_note"]          = f"{m['status']} — {m['stage']}"
+            lead["tracker_person"]        = m["person"]
+            lead["tracker_person_role"]   = m["person_role"]
+            lead["tracker_contact_email"] = m["contact_email"]
+            lead["tracker_person_url"]    = m["person_url"]
+            lead["tracker_fu_person"]     = m["fu_person"]
+            lead["tracker_fu_url"]        = m["fu_url"]
+            lead["tracker_fu_email"]      = m["fu_email"]
         else:
             lead["tracker_match"]         = False
             lead["tracker_note"]          = ""
@@ -344,35 +365,32 @@ def _format_lead_full(lead: dict) -> list[str]:
 
     # Contact (conditional — only when tracker_match)
     if lead.get("tracker_match"):
-        def _is_li_profile(url: str) -> bool:
-            u = url.lower()
-            return "linkedin.com/in/" in u or "linkedin.com/pub/" in u
-
-        person_url = lead.get("tracker_person_url", "").strip()
-        if not _is_li_profile(person_url):
-            person_url = ""
+        person      = lead.get("tracker_person", "").strip()
+        person_role = lead.get("tracker_person_role", "").strip()
+        email       = lead.get("tracker_contact_email", "").strip()
+        person_url  = lead.get("tracker_person_url", "").strip()
 
         contact_parts = []
-        if lead.get("tracker_person"):
-            contact_parts.append(f"👤 {lead['tracker_person']}")
-        if lead.get("tracker_contact_email"):
-            contact_parts.append(f"✉ {lead['tracker_contact_email']}")
+        if person:
+            contact_parts.append(f"👤 {person} ({person_role})" if person_role else f"👤 {person}")
+        if email:
+            contact_parts.append(f"✉ {email}")
         if person_url:
             contact_parts.append(f"🔗 {person_url}")
         if contact_parts:
             lines.append("**Contact:** " + "  ·  ".join(contact_parts))
 
-        fu_url = lead.get("tracker_fu_url", "").strip()
-        if not _is_li_profile(fu_url):
-            fu_url = ""
+        fu_person = lead.get("tracker_fu_person", "").strip()
+        fu_url    = lead.get("tracker_fu_url", "").strip()
+        fu_email  = lead.get("tracker_fu_email", "").strip()
 
         fu_parts = []
-        if lead.get("tracker_fu_person"):
-            fu_parts.append(f"👤 {lead['tracker_fu_person']}")
+        if fu_person:
+            fu_parts.append(f"👤 {fu_person}")
         if fu_url:
             fu_parts.append(f"🔗 {fu_url}")
-        if lead.get("tracker_fu_email"):
-            fu_parts.append(f"✉ {lead['tracker_fu_email']}")
+        if fu_email:
+            fu_parts.append(f"✉ {fu_email}")
         if fu_parts:
             lines.append("**Follow-up:** " + "  ·  ".join(fu_parts))
 
