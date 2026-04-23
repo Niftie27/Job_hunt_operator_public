@@ -224,6 +224,8 @@ def _resolve_source_url(source: dict) -> str:
         return f"https://web3.career/{sid}-jobs"
     if t == "cryptojobslist":
         return f"https://cryptojobslist.com/{sid}"
+    if t == "cryptocurrencyjobs":
+        return f"https://cryptocurrencyjobs.co/?q={sid}"
     return ""
 
 

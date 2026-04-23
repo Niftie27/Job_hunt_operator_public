@@ -48,9 +48,9 @@ SOURCES = [
     # {"type": "getro", "id": "wormhole",       "name": "Wormhole Ecosystem (Getro)"},  # 404 on 2026-04-21, investigate later
 
     # ── Career pages (Playwright scraper) ──
-    # {"type": "career_page", "id": "https://phantom.app/careers",               "name": "Phantom", "category": "crypto"},  # moved to career_page_llm pilot (v0.9.16)
+    {"type": "career_page", "id": "https://phantom.app/careers",               "name": "Phantom", "category": "crypto"},  # restored from career_page_llm rollback (v0.9.17)
     {"type": "career_page", "id": "https://layerzero.network/careers",          "name": "LayerZero", "category": "crypto"},
-    # {"type": "career_page", "id": "https://satoshilabs.com/careers",            "name": "SatoshiLabs", "default_location": "Prague, Czech Republic", "category": "crypto"},  # moved to career_page_llm pilot (v0.9.16)
+    {"type": "career_page", "id": "https://satoshilabs.com/careers",            "name": "SatoshiLabs", "default_location": "Prague, Czech Republic", "category": "crypto"},  # restored from career_page_llm rollback (v0.9.17)
     {"type": "career_page", "id": "https://www.alchemy.com/careers",            "name": "Alchemy", "category": "crypto"},
     {"type": "career_page", "id": "https://chainlinklabs.com/careers",          "name": "Chainlink", "category": "crypto"},
     {"type": "career_page", "id": "https://www.kraken.com/careers",             "name": "Kraken", "category": "crypto"},
@@ -66,7 +66,7 @@ SOURCES = [
     {"type": "career_page", "id": "https://tokenterminal.com/careers",          "name": "Token Terminal", "category": "crypto"},
     {"type": "career_page", "id": "https://taiko.xyz/careers",                  "name": "Taiko", "category": "crypto"},
     # {"type": "career_page", "id": "https://frax.finance/careers",               "name": "Frax", "category": "crypto"},  # dead 2026-04-23, no working career page
-    {"type": "career_page", "id": "https://cryptocurrencyjobs.co/startups/frax-finance/", "name": "Frax (via aggregator)", "category": "crypto"},
+    # Frax now covered by cryptocurrencyjobs.co aggregator (v0.9.17), no individual entry needed
     {"type": "career_page", "id": "https://www.blaize.com/careers/",            "name": "Blaize", "category": "crypto"},  # was blaize.tech (expired 2026-04-23)
 
     # ── Tracker-derived sources (v0.9.6 discovery) ──
@@ -98,12 +98,10 @@ SOURCES = [
     {"type": "career_page", "id": "https://www.digitalasset.com/careers",    "name": "Digital Asset", "category": "crypto"},
     {"type": "ashby",       "id": "braiins",                                 "name": "Braiins", "category": "crypto"},
     {"type": "ashby",       "id": "onramp",                                  "name": "OnRamp", "category": "crypto"},
-    # {"type": "career_page", "id": "https://www.langchain.com/careers",       "name": "LangChain", "category": "crypto"},  # moved to career_page_llm pilot (v0.9.16)
+    {"type": "career_page", "id": "https://www.langchain.com/careers",       "name": "LangChain", "category": "crypto"},  # restored from career_page_llm rollback (v0.9.17)
 
-    # ── LLM-powered career page scraping (Crawl4AI pilot, v0.9.16) ──
-    {"type": "career_page_llm", "id": "https://satoshilabs.com/careers",      "name": "SatoshiLabs", "default_location": "Prague, Czech Republic", "category": "crypto"},
-    {"type": "career_page_llm", "id": "https://www.langchain.com/careers",    "name": "LangChain", "category": "crypto"},
-    {"type": "career_page_llm", "id": "https://phantom.app/careers",          "name": "Phantom", "category": "crypto"},
+    # Crawl4AI pilot (v0.9.16) rolled back in v0.9.17 — async wrapper bug + Groq rate limits.
+    # crawl4ai_fetcher.py is kept in repo for future iteration but no source routes to it.
 
     # ── Crypto job boards ──
     # These search across many companies at once
@@ -112,6 +110,17 @@ SOURCES = [
     {"type": "web3career",      "id": "smart-contract",     "name": "web3.career (smart-contract)", "category": "crypto"},
     {"type": "cryptojobslist",  "id": "solidity-jobs",      "name": "CryptoJobsList (solidity)", "category": "crypto"},
     {"type": "cryptojobslist",  "id": "blockchain-jobs",    "name": "CryptoJobsList (blockchain)", "category": "crypto"},
+
+    # ── cryptocurrencyjobs.co aggregator (curates 1500+ crypto companies) ──
+    # `id` is used as an Algolia free-text query against the title field.
+    # Slugs that produce 0/few results were swapped (the site's Algolia index
+    # doesn't include `keywords.name` as a searchable attribute, so e.g.
+    # "solidity" → 0 hits, "full-stack" → 5; "rust" and "web3" return more).
+    {"type": "cryptocurrencyjobs", "id": "engineering",  "name": "CryptoCurrencyJobs (engineering)", "category": "crypto"},
+    {"type": "cryptocurrencyjobs", "id": "remote",       "name": "CryptoCurrencyJobs (remote)",      "category": "crypto"},
+    {"type": "cryptocurrencyjobs", "id": "blockchain",   "name": "CryptoCurrencyJobs (blockchain)",  "category": "crypto"},
+    {"type": "cryptocurrencyjobs", "id": "rust",         "name": "CryptoCurrencyJobs (rust)",        "category": "crypto"},
+    {"type": "cryptocurrencyjobs", "id": "web3",         "name": "CryptoCurrencyJobs (web3)",        "category": "crypto"},
 
     # ── General/tech companies (non-crypto, opt-in via --mode all) ──
     {"type": "ashby",       "id": "purestorage",                                                "name": "Pure Storage", "category": "general"},

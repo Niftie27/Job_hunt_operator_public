@@ -311,6 +311,76 @@ def fetch_cryptojobslist(category: str, label: str) -> list[dict]:
     return jobs
 
 
+# ─── CRYPTOCURRENCYJOBS.CO ────────────────────────────────────────────
+# Curated aggregator covering ~1500 crypto companies. The site is a JS SPA
+# backed by Algolia search — the HTML shell has no job links. We hit the
+# Algolia search API directly using the public search-only credentials
+# embedded in the site's JS bundle.
+
+_CCJ_ALGOLIA_APP_ID  = "8EHCB38Y1U"
+_CCJ_ALGOLIA_API_KEY = "e3deada9c15551e6363ee91e7e7d59cc"
+_CCJ_ALGOLIA_INDEX   = "jobs"
+
+
+def _ccj_search(query: str, hits_per_page: int = 50) -> list[dict]:
+    """POST to Algolia search; returns the `hits` list. Empty on failure."""
+    url = (
+        f"https://{_CCJ_ALGOLIA_APP_ID}-dsn.algolia.net"
+        f"/1/indexes/{_CCJ_ALGOLIA_INDEX}/query"
+    )
+    payload = json.dumps({"query": query, "hitsPerPage": hits_per_page}).encode()
+    req = urllib.request.Request(
+        url, data=payload, method="POST",
+        headers={
+            "X-Algolia-Application-Id": _CCJ_ALGOLIA_APP_ID,
+            "X-Algolia-API-Key":        _CCJ_ALGOLIA_API_KEY,
+            "Content-Type":             "application/json",
+            # The search-only key is referer-restricted to cryptocurrencyjobs.co.
+            "Referer":                  "https://cryptocurrencyjobs.co/",
+            "Origin":                   "https://cryptocurrencyjobs.co",
+            "User-Agent":               "JH-Operator/0.1",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data.get("hits", []) or []
+    except (urllib.error.URLError, json.JSONDecodeError, TimeoutError) as e:
+        print(f"  ⚠ ccj algolia query={query!r} failed: {e}")
+        return []
+
+
+def fetch_cryptocurrencyjobs(category: str, label: str) -> list[dict]:
+    """
+    Fetch jobs from cryptocurrencyjobs.co for a category keyword.
+    `category` is used as a free-text Algolia query (e.g. "engineering",
+    "solidity", "remote"). Returns up to 50 most-relevant hits.
+    """
+    hits = _ccj_search(category, hits_per_page=50)
+    jobs: list[dict] = []
+    for h in hits:
+        title = (h.get("title") or "").strip()
+        if not title:
+            continue
+        company   = (h.get("company") or {}).get("name") or "Unknown"
+        permalink = h.get("permalink") or ""
+        if not permalink:
+            continue
+        location = ", ".join(h.get("locationFilter") or []) or "Unknown"
+
+        jobs.append({
+            "title":    title,
+            "company":  company,
+            "location": location,
+            "url":      f"https://cryptocurrencyjobs.co{permalink}",
+            "source":   f"cryptocurrencyjobs/{category}",
+            "date":     h.get("datePublished", "")[:10],
+            "snippet":  "",
+            "job_id":   h.get("objectID", ""),
+        })
+    return jobs
+
+
 # ─── GETRO ────────────────────────────────────────────────────────────
 # Getro is an ecosystem-level job board platform (e.g. Wormhole ecosystem).
 # URL pattern: https://{slug}.getro.com/jobs
@@ -408,6 +478,8 @@ def fetch_source(source: dict) -> list[dict]:
         return fetch_web3career(src_id, name)
     elif src_type == "cryptojobslist":
         return fetch_cryptojobslist(src_id, name)
+    elif src_type == "cryptocurrencyjobs":
+        return fetch_cryptocurrencyjobs(src_id, name)
     elif src_type == "getro":
         return fetch_getro(src_id, name)
     elif src_type == "career_page":
