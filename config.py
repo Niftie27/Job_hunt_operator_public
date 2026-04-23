@@ -15,83 +15,132 @@ and how scoring works. Everything else reads from here.
 
 SOURCES = [
     # ── Greenhouse boards ──
-    {"type": "greenhouse", "id": "bcbgroup",            "name": "BCB Group"},
-    {"type": "greenhouse", "id": "bloxstaking",         "name": "Blox Staking / SSV Labs"},
-    {"type": "greenhouse", "id": "nansen",              "name": "Nansen"},
+    {"type": "greenhouse", "id": "bcbgroup",            "name": "BCB Group", "category": "crypto"},
+    {"type": "greenhouse", "id": "bloxstaking",         "name": "Blox Staking / SSV Labs", "category": "crypto"},
+    {"type": "greenhouse", "id": "nansen",              "name": "Nansen", "category": "crypto"},
     # {"type": "greenhouse", "id": "avalabs",            "name": "Ava Labs (Avalanche)"},   # 404 on 2026-04-21, investigate later
     # {"type": "greenhouse", "id": "wormholefoundation", "name": "Wormhole Foundation"},    # 404 on 2026-04-21, investigate later
-    {"type": "greenhouse", "id": "woofi",               "name": "WOOFi"},
+    {"type": "greenhouse", "id": "woofi",               "name": "WOOFi", "category": "crypto"},
     # {"type": "greenhouse", "id": "chainalysis",        "name": "Chainalysis"},            # 404 on 2026-04-21, investigate later
-    {"type": "greenhouse", "id": "consensys",           "name": "ConsenSys"},
+    {"type": "greenhouse", "id": "consensys",           "name": "ConsenSys", "category": "crypto"},
     # {"type": "greenhouse", "id": "offchainlabs",       "name": "Offchain Labs (Arbitrum)"},  # 404 on 2026-04-21, investigate later
 
     # ── Ashby boards ──
-    {"type": "ashby", "id": "nethermind",    "name": "Nethermind"},
-    {"type": "ashby", "id": "Zircuit",       "name": "Zircuit"},
+    {"type": "ashby", "id": "nethermind",    "name": "Nethermind", "category": "crypto"},
+    {"type": "ashby", "id": "Zircuit",       "name": "Zircuit", "category": "crypto"},
     # {"type": "ashby", "id": "plume-network", "name": "Plume Network"},                   # 404 on 2026-04-21, investigate later
-    {"type": "ashby", "id": "wormholelabs",  "name": "Wormhole Labs"},
+    {"type": "ashby", "id": "wormholelabs",  "name": "Wormhole Labs", "category": "crypto"},
 
     # ── Lever boards ──
-    {"type": "lever", "id": "moonpay", "name": "MoonPay"},
+    {"type": "lever", "id": "moonpay", "name": "MoonPay", "category": "crypto"},
 
     # ── New Lever boards ──
-    {"type": "lever", "id": "immutable",      "name": "Immutable"},
+    {"type": "lever", "id": "immutable",      "name": "Immutable", "category": "crypto"},
     # {"type": "lever", "id": "axiomzen",       "name": "Dapper Labs"},  # 404 on 2026-04-21 and 2026-04-22 — slug likely stale
-    {"type": "lever", "id": "anchorage",      "name": "Anchorage Digital"},
+    {"type": "lever", "id": "anchorage",      "name": "Anchorage Digital", "category": "crypto"},
 
     # ── New Ashby boards ──
     # {"type": "ashby", "id": "Rubicon",        "name": "Rubicon"},        # 404 on 2026-04-21, investigate later
     # {"type": "ashby", "id": "zealy",          "name": "Zealy"},          # 404 on 2026-04-21, investigate later
-    {"type": "ashby", "id": "injective-labs", "name": "Injective"},
+    {"type": "ashby", "id": "injective-labs", "name": "Injective", "category": "crypto"},
 
     # ── Getro boards ──
     # {"type": "getro", "id": "wormhole",       "name": "Wormhole Ecosystem (Getro)"},  # 404 on 2026-04-21, investigate later
 
     # ── Career pages (Playwright scraper) ──
-    {"type": "career_page", "id": "https://phantom.app/careers",               "name": "Phantom"},
-    {"type": "career_page", "id": "https://layerzero.network/careers",          "name": "LayerZero"},
-    {"type": "career_page", "id": "https://satoshilabs.com/careers",            "name": "SatoshiLabs", "default_location": "Prague, Czech Republic"},
-    {"type": "career_page", "id": "https://www.alchemy.com/careers",            "name": "Alchemy"},
-    {"type": "career_page", "id": "https://chainlinklabs.com/careers",          "name": "Chainlink"},
-    {"type": "career_page", "id": "https://www.kraken.com/careers",             "name": "Kraken"},
-    {"type": "career_page", "id": "https://dydx.exchange/careers",              "name": "dYdX"},
-    {"type": "career_page", "id": "https://opensea.io/careers",                 "name": "OpenSea"},
-    {"type": "career_page", "id": "https://www.quicknode.com/careers",          "name": "QuickNode"},
-    {"type": "career_page", "id": "https://www.gemini.com/careers",             "name": "Gemini"},
-    {"type": "career_page", "id": "https://dfinity.org/careers",                "name": "DFINITY"},
-    {"type": "career_page", "id": "https://zerion.io/careers",                  "name": "Zerion"},
-    {"type": "career_page", "id": "https://info.arkm.com/careers",              "name": "Arkham"},
-    {"type": "career_page", "id": "https://www.falconx.io/careers",             "name": "FalconX"},
-    {"type": "career_page", "id": "https://www.blockchain.com/careers",         "name": "Blockchain.com"},
-    {"type": "career_page", "id": "https://tokenterminal.com/careers",          "name": "Token Terminal"},
-    {"type": "career_page", "id": "https://taiko.xyz/careers",                  "name": "Taiko"},
-    {"type": "career_page", "id": "https://frax.finance/careers",               "name": "Frax"},
-    {"type": "career_page", "id": "https://blaize.tech/careers/",               "name": "Blaize"},
+    {"type": "career_page", "id": "https://phantom.app/careers",               "name": "Phantom", "category": "crypto"},
+    {"type": "career_page", "id": "https://layerzero.network/careers",          "name": "LayerZero", "category": "crypto"},
+    {"type": "career_page", "id": "https://satoshilabs.com/careers",            "name": "SatoshiLabs", "default_location": "Prague, Czech Republic", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.alchemy.com/careers",            "name": "Alchemy", "category": "crypto"},
+    {"type": "career_page", "id": "https://chainlinklabs.com/careers",          "name": "Chainlink", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.kraken.com/careers",             "name": "Kraken", "category": "crypto"},
+    {"type": "career_page", "id": "https://dydx.exchange/careers",              "name": "dYdX", "category": "crypto"},
+    {"type": "career_page", "id": "https://opensea.io/careers",                 "name": "OpenSea", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.quicknode.com/careers",          "name": "QuickNode", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.gemini.com/careers",             "name": "Gemini", "category": "crypto"},
+    {"type": "career_page", "id": "https://dfinity.org/careers",                "name": "DFINITY", "category": "crypto"},
+    {"type": "career_page", "id": "https://zerion.io/careers",                  "name": "Zerion", "category": "crypto"},
+    {"type": "career_page", "id": "https://info.arkm.com/careers",              "name": "Arkham", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.falconx.io/careers",             "name": "FalconX", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.blockchain.com/careers",         "name": "Blockchain.com", "category": "crypto"},
+    {"type": "career_page", "id": "https://tokenterminal.com/careers",          "name": "Token Terminal", "category": "crypto"},
+    {"type": "career_page", "id": "https://taiko.xyz/careers",                  "name": "Taiko", "category": "crypto"},
+    {"type": "career_page", "id": "https://frax.finance/careers",               "name": "Frax", "category": "crypto"},
+    {"type": "career_page", "id": "https://blaize.tech/careers/",               "name": "Blaize", "category": "crypto"},
 
     # ── Tracker-derived sources (v0.9.6 discovery) ──
-    {"type": "lever",      "id": "tokenmetrics",   "name": "Token Metrics"},
-    {"type": "lever",      "id": "animocabrands",  "name": "Animoca Brands"},
-    {"type": "greenhouse", "id": "bitpanda",        "name": "Bitpanda"},
-    {"type": "greenhouse", "id": "b2c2",            "name": "B2c2"},
-    {"type": "greenhouse", "id": "pact",            "name": "Pact Labs"},
-    {"type": "ashby",      "id": "odin",            "name": "Odin"},
-    {"type": "ashby",      "id": "somnia",          "name": "Somnia"},
-    {"type": "greenhouse", "id": "make",            "name": "Make"},
+    {"type": "lever",      "id": "tokenmetrics",   "name": "Token Metrics", "category": "crypto"},
+    {"type": "lever",      "id": "animocabrands",  "name": "Animoca Brands", "category": "crypto"},
+    {"type": "greenhouse", "id": "bitpanda",        "name": "Bitpanda", "category": "crypto"},
+    {"type": "greenhouse", "id": "b2c2",            "name": "B2c2", "category": "crypto"},
+    {"type": "greenhouse", "id": "pact",            "name": "Pact Labs", "category": "crypto"},
+    {"type": "ashby",      "id": "odin",            "name": "Odin", "category": "crypto"},
+    {"type": "ashby",      "id": "somnia",          "name": "Somnia", "category": "crypto"},
+    {"type": "greenhouse", "id": "make",            "name": "Make", "category": "crypto"},
 
-    {"type": "career_page", "id": "https://1password.com/careers",           "name": "1Password"},
-    {"type": "career_page", "id": "https://www.paxos.com/careers",           "name": "Paxos"},
-    {"type": "career_page", "id": "https://www.improbable.io/careers",       "name": "Improbable"},
-    {"type": "career_page", "id": "https://keyrock.com/careers/",            "name": "Keyrock"},
-    {"type": "career_page", "id": "https://www.modular.com/company/careers", "name": "Modular"},
-    {"type": "career_page", "id": "https://devbrother.com/career",           "name": "DevBrother"},
+    {"type": "career_page", "id": "https://1password.com/careers",           "name": "1Password", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.paxos.com/careers",           "name": "Paxos", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.improbable.io/careers",       "name": "Improbable", "category": "crypto"},
+    {"type": "career_page", "id": "https://keyrock.com/careers/",            "name": "Keyrock", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.modular.com/company/careers", "name": "Modular", "category": "crypto"},
+    {"type": "career_page", "id": "https://devbrother.com/career",           "name": "DevBrother", "category": "crypto"},
+
+    # ── Crypto-aligned sources (watchlist discovery v0.9.11) ──
+    {"type": "career_page", "id": "https://etherfi.io/careers",              "name": "Ether.fi", "category": "crypto"},
+    {"type": "career_page", "id": "https://winnables.io/careers",            "name": "Winnables", "category": "crypto"},
+    {"type": "career_page", "id": "https://pod.io/careers",                  "name": "Pod Network", "category": "crypto"},
+    {"type": "career_page", "id": "https://halborn.io/careers",              "name": "Halborn", "category": "crypto"},
+    {"type": "career_page", "id": "https://cryptosec.com/crypto-security-jobs/", "name": "Cryptosec", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.digitalasset.com/careers",    "name": "Digital Asset", "category": "crypto"},
+    {"type": "ashby",       "id": "braiins",                                 "name": "Braiins", "category": "crypto"},
+    {"type": "ashby",       "id": "onramp",                                  "name": "OnRamp", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.langchain.com/careers",       "name": "LangChain", "category": "crypto"},
 
     # ── Crypto job boards ──
     # These search across many companies at once
-    {"type": "web3career",      "id": "solidity",           "name": "web3.career (solidity)"},
-    {"type": "web3career",      "id": "blockchain",         "name": "web3.career (blockchain)"},
-    {"type": "web3career",      "id": "smart-contract",     "name": "web3.career (smart-contract)"},
-    {"type": "cryptojobslist",  "id": "solidity-jobs",      "name": "CryptoJobsList (solidity)"},
-    {"type": "cryptojobslist",  "id": "blockchain-jobs",    "name": "CryptoJobsList (blockchain)"},
+    {"type": "web3career",      "id": "solidity",           "name": "web3.career (solidity)", "category": "crypto"},
+    {"type": "web3career",      "id": "blockchain",         "name": "web3.career (blockchain)", "category": "crypto"},
+    {"type": "web3career",      "id": "smart-contract",     "name": "web3.career (smart-contract)", "category": "crypto"},
+    {"type": "cryptojobslist",  "id": "solidity-jobs",      "name": "CryptoJobsList (solidity)", "category": "crypto"},
+    {"type": "cryptojobslist",  "id": "blockchain-jobs",    "name": "CryptoJobsList (blockchain)", "category": "crypto"},
+
+    # ── General/tech companies (non-crypto, opt-in via --mode all) ──
+    {"type": "ashby",       "id": "purestorage",                                                "name": "Pure Storage", "category": "general"},
+    {"type": "greenhouse",  "id": "ipfabric",                                                   "name": "IP Fabric", "category": "general"},
+    {"type": "ashby",       "id": "gooddata",                                                   "name": "GoodData", "category": "general"},
+    {"type": "ashby",       "id": "runway",                                                     "name": "Runway", "category": "general"},
+    {"type": "greenhouse",  "id": "momence",                                                    "name": "Momence", "category": "general"},
+    {"type": "greenhouse",  "id": "wrike",                                                      "name": "Wrike", "category": "general"},
+    {"type": "career_page", "id": "https://twine.com/careers",                                  "name": "Twine", "category": "general"},
+    {"type": "career_page", "id": "https://mtransform.com/careers",                             "name": "mTransform", "category": "general"},
+    {"type": "career_page", "id": "https://careers.pixel8labs.com/215b05e5068e4c07b231ae7f27500502", "name": "Pixel8Labs", "category": "general"},
+    {"type": "career_page", "id": "https://europroptrading.com/careers",                        "name": "EUROPROP Trading", "category": "general"},
+    {"type": "career_page", "id": "https://www.quantumtechnologies.com/careers",                "name": "Quantum Technologies", "category": "general"},
+    {"type": "career_page", "id": "https://coltech.com/careers",                                "name": "Coltech", "category": "general"},
+    {"type": "career_page", "id": "https://quantfi.com/careers",                                "name": "QuantFi", "category": "general"},
+    {"type": "career_page", "id": "https://bloxspace.com/careers",                              "name": "Blox Space", "category": "general"},
+    {"type": "career_page", "id": "https://idc.io/careers",                                     "name": "IDC", "category": "general"},
+    {"type": "career_page", "id": "https://careers.roblox.com/jobs",                            "name": "Roblox", "category": "general"},
+    {"type": "career_page", "id": "https://2n.io/careers",                                      "name": "2N", "category": "general"},
+    {"type": "career_page", "id": "https://www.wppmedia.com/careers",                           "name": "WPP Media", "category": "general"},
+    {"type": "career_page", "id": "https://apify.com/jobs",                                     "name": "Apify", "category": "general"},
+    {"type": "career_page", "id": "https://www.mapbox.com/careers",                             "name": "MapBox", "category": "general"},
+    {"type": "career_page", "id": "https://myedspace.io/careers",                               "name": "MyEdSpace", "category": "general"},
+    {"type": "career_page", "id": "https://g20.io/careers",                                     "name": "G-20 Group", "category": "general"},
+    {"type": "career_page", "id": "https://www.8am.com/careers/",                               "name": "8am", "category": "general"},
+    {"type": "career_page", "id": "https://activa.io/careers",                                  "name": "Activa Digital", "category": "general"},
+    {"type": "career_page", "id": "https://praktikaai.com/careers",                             "name": "Praktika.ai", "category": "general"},
+    {"type": "career_page", "id": "https://www.yelp.careers/us/en",                             "name": "Yelp", "category": "general"},
+    {"type": "career_page", "id": "https://ftmo.io/careers",                                    "name": "FTMO", "category": "general"},
+    {"type": "career_page", "id": "https://www.searchapi.io/careers",                           "name": "SearchApi", "category": "general"},
+    {"type": "career_page", "id": "https://huspy.com/careers",                                  "name": "Huspy", "category": "general"},
+    {"type": "career_page", "id": "https://www.filevine.com/jobs/",                             "name": "Filevine", "category": "general"},
+    {"type": "career_page", "id": "https://resistantai.com/careers",                            "name": "Resistant AI", "category": "general"},
+    {"type": "career_page", "id": "https://granton.com/careers",                                "name": "Granton", "category": "general"},
+    {"type": "career_page", "id": "https://nice.io/careers",                                    "name": "NiCE", "category": "general"},
+    {"type": "career_page", "id": "https://www.paylocity.com/careers/",                         "name": "Paylocity", "category": "general"},
+    {"type": "career_page", "id": "https://ppl3.com/careers",                                   "name": "ppl3", "category": "general"},
+    {"type": "career_page", "id": "https://libeara.com/careers/",                               "name": "Libeara", "category": "general"},
 ]
 
 

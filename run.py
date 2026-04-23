@@ -17,6 +17,7 @@ What happens:
 That's the whole loop. No magic, no agents, no AI — just fetch, compare, score, report.
 """
 
+import argparse
 import os
 import sys
 import time
@@ -35,20 +36,35 @@ from state import load_state, save_state, update_state
 
 
 def main():
+    parser = argparse.ArgumentParser(description="JH Operator — Daily Run")
+    parser.add_argument(
+        "--mode",
+        choices=["crypto", "all"],
+        default="crypto",
+        help="Which sources to fetch: crypto (default) or all (includes general tech)",
+    )
+    args = parser.parse_args()
+
+    if args.mode == "crypto":
+        sources_to_fetch = [s for s in SOURCES if s.get("category", "crypto") == "crypto"]
+    else:
+        sources_to_fetch = SOURCES
+
     print("=" * 60)
     print("  JH Operator — Daily Intake Run")
     print(f"  {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    print(f"  Mode: {args.mode}  ({len(sources_to_fetch)} sources)")
     print("=" * 60)
     print()
-    
-    # ── Step 1: Fetch from all sources ──
+
+    # ── Step 1: Fetch from selected sources ──
     print("📡 Step 1: Fetching from sources...")
     all_leads = []
     sources_ok = 0
     sources_failed = 0
     errors = []
-    
-    for source in SOURCES:
+
+    for source in sources_to_fetch:
         try:
             jobs = fetch_source(source)
             if jobs:
@@ -82,7 +98,7 @@ def main():
             "errors": errors,
         }
         report = generate_report([], fetch_stats)
-        _save_report(report)
+        _save_report(report, args.mode)
         return
     
     # ── Step 2: Dedupe within batch ──
@@ -102,8 +118,9 @@ def main():
 
     # ── Step 4: Compare against state (memory) ──
     print("\n🧠 Step 4: Comparing against previous runs...")
-    old_state = load_state()
-    print(f"  Previous state has {len(old_state)} known roles")
+    state_path = _state_path(args.mode)
+    old_state = load_state(state_path)
+    print(f"  Previous state has {len(old_state)} known roles ({state_path})")
     new_state, all_leads = update_state(all_leads, old_state)
     new_leads = sum(1 for l in all_leads if l.get("freshness") == "new")
     still_open = sum(1 for l in all_leads if l.get("freshness") == "still_open")
@@ -126,12 +143,12 @@ def main():
         "errors": errors,
     }
     report = generate_report(all_leads, fetch_stats)
-    filepath = _save_report(report)
+    filepath = _save_report(report, args.mode)
 
     # ── Step 7: Save state + raw leads CSV ──
-    save_state(new_state)
+    save_state(new_state, state_path)
     print(f"  State saved: {len(new_state)} roles tracked")
-    _save_leads_csv(all_leads)
+    _save_leads_csv(all_leads, args.mode)
 
     print("\n" + "=" * 60)
     print("  ✅ Done!")
@@ -139,24 +156,32 @@ def main():
     print("=" * 60)
 
 
-def _save_report(report: str) -> str:
+def _state_path(mode: str) -> str:
+    return "data/state.json" if mode == "crypto" else "data/state-all.json"
+
+
+def _mode_suffix(mode: str) -> str:
+    return "" if mode == "crypto" else "-all"
+
+
+def _save_report(report: str, mode: str) -> str:
     """Save the markdown report to the output directory."""
     briefs_dir = os.path.join(OUTPUT_DIR, "briefs")
     os.makedirs(briefs_dir, exist_ok=True)
     date_str = datetime.now().strftime("%Y-%m-%d")
-    filepath = os.path.join(briefs_dir, f"daily-brief-{date_str}.md")
+    filepath = os.path.join(briefs_dir, f"daily-brief{_mode_suffix(mode)}-{date_str}.md")
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(report)
     print(f"  Saved: {filepath}")
     return filepath
 
 
-def _save_leads_csv(leads: list[dict]) -> str:
+def _save_leads_csv(leads: list[dict], mode: str) -> str:
     """Save all scored leads as a CSV for reference / future imports."""
     leads_dir = os.path.join(OUTPUT_DIR, "leads")
     os.makedirs(leads_dir, exist_ok=True)
     date_str = datetime.now().strftime("%Y-%m-%d")
-    filepath = os.path.join(leads_dir, f"leads-{date_str}.csv")
+    filepath = os.path.join(leads_dir, f"leads{_mode_suffix(mode)}-{date_str}.csv")
     
     fieldnames = ["freshness", "role_type", "seniority", "web3_score", "title", "company",
                   "location", "source", "source_type", "date", "first_seen", "last_seen",
