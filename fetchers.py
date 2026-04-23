@@ -413,6 +413,9 @@ def fetch_source(source: dict) -> list[dict]:
     elif src_type == "career_page":
         from playwright_fetcher import fetch_career_page
         return fetch_career_page(src_id, name, source.get("default_location", ""))
+    elif src_type == "career_page_llm":
+        from crawl4ai_fetcher import fetch_career_page_crawl4ai
+        return fetch_career_page_crawl4ai(src_id, name, source.get("default_location", ""))
     else:
         print(f"  ⚠ Unknown source type: {src_type}")
         return []

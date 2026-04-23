@@ -48,9 +48,9 @@ SOURCES = [
     # {"type": "getro", "id": "wormhole",       "name": "Wormhole Ecosystem (Getro)"},  # 404 on 2026-04-21, investigate later
 
     # ── Career pages (Playwright scraper) ──
-    {"type": "career_page", "id": "https://phantom.app/careers",               "name": "Phantom", "category": "crypto"},
+    # {"type": "career_page", "id": "https://phantom.app/careers",               "name": "Phantom", "category": "crypto"},  # moved to career_page_llm pilot (v0.9.16)
     {"type": "career_page", "id": "https://layerzero.network/careers",          "name": "LayerZero", "category": "crypto"},
-    {"type": "career_page", "id": "https://satoshilabs.com/careers",            "name": "SatoshiLabs", "default_location": "Prague, Czech Republic", "category": "crypto"},
+    # {"type": "career_page", "id": "https://satoshilabs.com/careers",            "name": "SatoshiLabs", "default_location": "Prague, Czech Republic", "category": "crypto"},  # moved to career_page_llm pilot (v0.9.16)
     {"type": "career_page", "id": "https://www.alchemy.com/careers",            "name": "Alchemy", "category": "crypto"},
     {"type": "career_page", "id": "https://chainlinklabs.com/careers",          "name": "Chainlink", "category": "crypto"},
     {"type": "career_page", "id": "https://www.kraken.com/careers",             "name": "Kraken", "category": "crypto"},
@@ -98,7 +98,12 @@ SOURCES = [
     {"type": "career_page", "id": "https://www.digitalasset.com/careers",    "name": "Digital Asset", "category": "crypto"},
     {"type": "ashby",       "id": "braiins",                                 "name": "Braiins", "category": "crypto"},
     {"type": "ashby",       "id": "onramp",                                  "name": "OnRamp", "category": "crypto"},
-    {"type": "career_page", "id": "https://www.langchain.com/careers",       "name": "LangChain", "category": "crypto"},
+    # {"type": "career_page", "id": "https://www.langchain.com/careers",       "name": "LangChain", "category": "crypto"},  # moved to career_page_llm pilot (v0.9.16)
+
+    # ── LLM-powered career page scraping (Crawl4AI pilot, v0.9.16) ──
+    {"type": "career_page_llm", "id": "https://satoshilabs.com/careers",      "name": "SatoshiLabs", "default_location": "Prague, Czech Republic", "category": "crypto"},
+    {"type": "career_page_llm", "id": "https://www.langchain.com/careers",    "name": "LangChain", "category": "crypto"},
+    {"type": "career_page_llm", "id": "https://phantom.app/careers",          "name": "Phantom", "category": "crypto"},
 
     # ── Crypto job boards ──
     # These search across many companies at once
