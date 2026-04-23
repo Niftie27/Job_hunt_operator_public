@@ -218,7 +218,7 @@ def _resolve_source_url(source: dict) -> str:
         return f"https://api.lever.co/v0/postings/{sid}?mode=json"
     if t == "getro":
         return f"https://{sid}.getro.com/api/v1/jobs"
-    if t == "career_page":
+    if t == "career_page" or t == "career_page_jina" or t == "career_page_llm":
         return sid
     if t == "web3career":
         return f"https://web3.career/{sid}-jobs"

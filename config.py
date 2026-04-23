@@ -63,11 +63,11 @@ SOURCES = [
     {"type": "career_page", "id": "https://info.arkm.com/careers",              "name": "Arkham", "category": "crypto"},
     {"type": "greenhouse",  "id": "falconx",                                    "name": "FalconX", "category": "crypto"},
     {"type": "career_page", "id": "https://www.blockchain.com/careers",         "name": "Blockchain.com", "category": "crypto"},
-    {"type": "career_page", "id": "https://tokenterminal.com/careers",          "name": "Token Terminal", "category": "crypto"},
+    {"type": "career_page_jina", "id": "https://tokenterminal.com/careers",     "name": "Token Terminal", "category": "crypto"},  # Jina pilot (v0.9.18)
     {"type": "career_page", "id": "https://taiko.xyz/careers",                  "name": "Taiko", "category": "crypto"},
     # {"type": "career_page", "id": "https://frax.finance/careers",               "name": "Frax", "category": "crypto"},  # dead 2026-04-23, no working career page
     # Frax now covered by cryptocurrencyjobs.co aggregator (v0.9.17), no individual entry needed
-    {"type": "career_page", "id": "https://www.blaize.com/careers/",            "name": "Blaize", "category": "crypto"},  # was blaize.tech (expired 2026-04-23)
+    {"type": "career_page_jina", "id": "https://www.blaize.com/careers/",       "name": "Blaize", "category": "crypto"},  # was blaize.tech (expired 2026-04-23); Jina pilot (v0.9.18)
 
     # ── Tracker-derived sources (v0.9.6 discovery) ──
     {"type": "lever",      "id": "tokenmetrics",   "name": "Token Metrics", "category": "crypto"},
@@ -93,7 +93,7 @@ SOURCES = [
     # {"type": "career_page", "id": "https://pod.io/careers",                  "name": "Pod Network", "category": "crypto"},  # dead 2026-04-23, domain gone
     # halborn.io redirects to scam SEO spam; halborn.com is the real domain.
     # Ashby/Lever/Greenhouse APIs all 404, so use the career page directly.
-    {"type": "career_page", "id": "https://halborn.com/careers",             "name": "Halborn", "category": "crypto"},
+    {"type": "career_page_jina", "id": "https://halborn.com/careers",        "name": "Halborn", "category": "crypto"},  # Jina pilot (v0.9.18)
     {"type": "career_page", "id": "https://cryptosec.com/crypto-security-jobs/", "name": "Cryptosec", "category": "crypto"},
     {"type": "career_page", "id": "https://www.digitalasset.com/careers",    "name": "Digital Asset", "category": "crypto"},
     {"type": "ashby",       "id": "braiins",                                 "name": "Braiins", "category": "crypto"},
