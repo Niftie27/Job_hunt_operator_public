@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """
-JH Operator — Find Career Pages for Tracker Companies
-=======================================================
-Reads data/tracker.csv, extracts unique company names, and discovers
-career page URLs / ATS types for companies not already in config.py.
+JH Operator — Find Career Pages for Tracker + Watchlist Companies
+==================================================================
+Reads data/tracker.csv AND data/watchlist.txt, extracts unique
+company names, and discovers career page URLs / ATS types for
+companies not already in config.py.
 
 Usage (run from project root):
     python3 tools/find_tracker_careers.py
 
 Output:
     - Console: summary + ready-to-paste config.py entries
-    - output/scans/tracker-careers-discovery.json
+    - output/scans/watchlist-careers-discovery.json
 """
 
 import csv
@@ -25,11 +26,22 @@ import urllib.error
 from pathlib import Path
 
 # ─── Skip lists ───────────────────────────────────────────────────────
+# Substring match (case-insensitive): skip if any token appears in name.
 
 SKIP_AGENCIES = {
     "blockchain headhunter", "spectrum search", "hyphen connect",
     "jobited", "mcg talent", "weplacedyou", "blue whales agency",
     "nula advisory",
+    # Watchlist additions
+    "jersey road talent", "hays", "axiom recruit", "dada consultants",
+    "career renew", "consol partners", "talentsync",
+    "skillfinder international", "crossing hurdles", "jobgether",
+    "radley james", "archon", "talentiq", "coolpeople",
+    "fullstack talents", "techinborn", "ascendion", "zoolatech",
+    "citadelo", "itmatch", "jobs contact", "collibra nv",
+    "itis holding", "natek", "xevos", "nexer group", "elite chain",
+    "saint-gobain", "red hat", "hcltech", "y soft", "bairesdev",
+    "deel", "epam systems", "avenga",
 }
 
 SKIP_JOB_BOARDS = {
@@ -38,6 +50,27 @@ SKIP_JOB_BOARDS = {
 
 SKIP_NON_REAL = {
     "project upwork", "contract",
+}
+
+# Big generic corps — would flood pipeline, not crypto-focused
+SKIP_BIG_CORPS = {
+    "microsoft", "google", "apple", "accenture", "deloitte", "pwc",
+    "siemens", "vodafone", "honeywell", "barclays", "citi", "nvidia",
+    "hewlett packard enterprise", "jetbrains", "intel", "ibm", "sap",
+    "oracle", "rockwell", "thales",
+}
+
+# Czech banks / corporates rarely have crypto roles
+SKIP_CZECH_BANKS = {
+    "ceska sporitelna", "česká spořitelna", "komercni banka",
+    "komerční banka", "csob", "čsob", "raiffeisenbank", "air bank",
+    "moneta money bank", "czech national bank", "e.on", "eon",
+    "commerzbank", "prima", "eset", "avast",
+}
+
+# Portfolio / umbrella entities (not a single hiring company)
+SKIP_PORTFOLIO = {
+    "ycombinator", "y combinator", "asteroid", "black dragon capital",
 }
 
 # All companies already tracked in config.py SOURCES (lowercased)
@@ -50,16 +83,36 @@ SKIP_IN_CONFIG = {
     "arkham", "falconx", "blockchain.com", "token terminal",
     "taiko", "frax", "blaize", "zircuit", "plume network",
     "woofi", "nansen", "bcb group", "ssv labs", "wormhole foundation",
-    "dapper labs",
+    "dapper labs", "modular", "improbable", "devbrother",
+    "paxos", "actis", "somnia", "make",
     # Tracker-specific aliases of the above
-    "bcb",            # BCB Group
-    "wormhole",       # Wormhole Foundation / Labs
-    "moonpay",        # also "Moonpay" capitalisation variant
-    "invity/trezor",  # SatoshiLabs product family — SatoshiLabs already in config
+    "bcb",                     # BCB Group
+    "wormhole",                # Wormhole Foundation / Labs
+    "moonpay",                 # also "Moonpay" capitalisation variant
+    "invity/trezor",           # SatoshiLabs product family
+    "trezor",                  # SatoshiLabs product
+    "invity",                  # SatoshiLabs product
+    "kraken digital asset",    # Kraken
+    "input output group",      # IOG (Cardano) — duplicate of Cardano-related, treat as in config
+    "tether.io", "tether",
 }
 
-TRACKER_PATH = Path("data/tracker.csv")
-OUTPUT_PATH  = Path("output/scans/tracker-careers-discovery.json")
+TRACKER_PATH   = Path("data/tracker.csv")
+WATCHLIST_PATH = Path("data/watchlist.txt")
+OUTPUT_PATH    = Path("output/scans/watchlist-careers-discovery.json")
+ARCHIVED_PATH  = Path("data/watchlist-archived.txt")
+
+# Map verbose reasons → short tag codes for archived file
+REASON_TAGS = {
+    "recruitment agency":   "agency",
+    "big generic corp":     "corp",
+    "czech bank/corp":      "bank",
+    "already in config.py": "in_config",
+    "portfolio/umbrella":   "umbrella",
+    "rejected":             "unfit",
+    "non-real company":     "unfit",
+    "job board":            "unfit",
+}
 
 REQUEST_DELAY    = 0.5   # between companies
 INTER_REQ_DELAY  = 0.2   # between individual HTTP probes
@@ -178,49 +231,91 @@ def try_ats(company: str) -> tuple[str | None, str | None]:
     return None, None
 
 
-# ─── Tracker loading ─────────────────────────────────────────────────
+# ─── Source loading ──────────────────────────────────────────────────
 
-def load_companies(path: Path) -> list[str]:
+def load_tracker_companies(path: Path) -> list[str]:
     seen: set[str] = set()
     companies: list[str] = []
+    if not path.exists():
+        return []
     with open(path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             name = (row.get("company") or "").strip()
-            if name and name not in seen:
-                seen.add(name)
+            if name and name.lower() not in seen:
+                seen.add(name.lower())
                 companies.append(name)
     return companies
 
 
+def load_watchlist_companies(path: Path) -> list[str]:
+    seen: set[str] = set()
+    companies: list[str] = []
+    if not path.exists():
+        return []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            name = line.strip()
+            if not name or name.startswith("#"):
+                continue
+            if name.lower() not in seen:
+                seen.add(name.lower())
+                companies.append(name)
+    return companies
+
+
+def _has_token(haystack: str, needles: set[str]) -> bool:
+    """Substring match: True if any needle appears anywhere in haystack."""
+    return any(n in haystack for n in needles)
+
+
 def skip_reason(name: str) -> str | None:
     nl = name.lower()
-    if nl in SKIP_AGENCIES:
+    if "(rejected)" in nl:
+        return "rejected"
+    if _has_token(nl, SKIP_IN_CONFIG):
+        return "already in config.py"
+    if _has_token(nl, SKIP_AGENCIES):
         return "recruitment agency"
+    if _has_token(nl, SKIP_BIG_CORPS):
+        return "big generic corp"
+    if _has_token(nl, SKIP_CZECH_BANKS):
+        return "czech bank/corp"
+    if _has_token(nl, SKIP_PORTFOLIO):
+        return "portfolio/umbrella"
     if nl in SKIP_JOB_BOARDS:
         return "job board"
     if nl in SKIP_NON_REAL:
         return "non-real company"
-    if "(rejected)" in nl:
-        return "rejected"
-    if nl in SKIP_IN_CONFIG:
-        return "already in config.py"
     return None
 
 
 # ─── Main ─────────────────────────────────────────────────────────────
 
 def main():
-    if not TRACKER_PATH.exists():
-        print(f"Error: {TRACKER_PATH} not found. Run from project root.", file=sys.stderr)
+    if not TRACKER_PATH.exists() and not WATCHLIST_PATH.exists():
+        print(f"Error: neither {TRACKER_PATH} nor {WATCHLIST_PATH} found. "
+              f"Run from project root.", file=sys.stderr)
         sys.exit(1)
 
     print("=" * 55)
-    print("  TRACKER CAREER DISCOVERY")
+    print("  WATCHLIST + TRACKER CAREER DISCOVERY")
     print("=" * 55)
     print()
 
-    all_companies = load_companies(TRACKER_PATH)
-    print(f"Total companies in tracker: {len(all_companies)}")
+    tracker_names   = load_tracker_companies(TRACKER_PATH)
+    watchlist_names = load_watchlist_companies(WATCHLIST_PATH)
+
+    # Merge, dedupe by lowercase name, preserve order (tracker first)
+    seen_norm: set[str] = set()
+    all_companies: list[str] = []
+    for name in tracker_names + watchlist_names:
+        nl = name.lower()
+        if nl not in seen_norm:
+            seen_norm.add(nl)
+            all_companies.append(name)
+
+    print(f"Total companies input: {len(all_companies)} "
+          f"(tracker {len(tracker_names)} + watchlist {len(watchlist_names)})")
 
     to_check: list[str] = []
     skipped:  list[tuple[str, str]] = []
@@ -231,7 +326,7 @@ def main():
         else:
             to_check.append(name)
 
-    print(f"Skipped (agencies/rejected/duplicates): {len(skipped)}")
+    print(f"Skipped (agencies/corps/duplicates): {len(skipped)}")
     print(f"Checking: {len(to_check)}")
     print()
 
@@ -342,6 +437,29 @@ def main():
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2)
     print(f"Saved to {OUTPUT_PATH}")
+
+    # ── Save archived watchlist ───────────────────────────────────────
+    ARCHIVED_PATH.parent.mkdir(parents=True, exist_ok=True)
+    # Group by tag for stable, scannable output
+    by_tag: dict[str, list[str]] = {}
+    for name, reason in skipped:
+        tag = REASON_TAGS.get(reason, "unfit")
+        by_tag.setdefault(tag, []).append(name)
+    tag_order = ["corp", "bank", "agency", "in_config", "umbrella", "unfit"]
+    lines = [
+        "# Companies from watchlist/tracker that were skipped from career discovery",
+        "# Reason codes: agency, corp, bank, in_config, umbrella, unfit",
+        "",
+    ]
+    for tag in tag_order:
+        names = sorted(by_tag.get(tag, []), key=str.lower)
+        for name in names:
+            lines.append(f"{name:<32}# {tag}")
+        if names:
+            lines.append("")
+    with open(ARCHIVED_PATH, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines).rstrip() + "\n")
+    print(f"Saved to {ARCHIVED_PATH}")
 
 
 if __name__ == "__main__":
