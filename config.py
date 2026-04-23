@@ -61,7 +61,7 @@ SOURCES = [
     {"type": "career_page", "id": "https://dfinity.org/careers",                "name": "DFINITY", "category": "crypto"},
     {"type": "career_page", "id": "https://zerion.io/careers",                  "name": "Zerion", "category": "crypto"},
     {"type": "career_page", "id": "https://info.arkm.com/careers",              "name": "Arkham", "category": "crypto"},
-    {"type": "career_page", "id": "https://www.falconx.io/careers",             "name": "FalconX", "category": "crypto"},
+    {"type": "greenhouse",  "id": "falconx",                                    "name": "FalconX", "category": "crypto"},
     {"type": "career_page", "id": "https://www.blockchain.com/careers",         "name": "Blockchain.com", "category": "crypto"},
     {"type": "career_page", "id": "https://tokenterminal.com/careers",          "name": "Token Terminal", "category": "crypto"},
     {"type": "career_page", "id": "https://taiko.xyz/careers",                  "name": "Taiko", "category": "crypto"},
