@@ -56,17 +56,18 @@ SOURCES = [
     {"type": "career_page", "id": "https://www.kraken.com/careers",             "name": "Kraken", "category": "crypto"},
     {"type": "career_page", "id": "https://dydx.exchange/careers",              "name": "dYdX", "category": "crypto"},
     {"type": "career_page", "id": "https://opensea.io/careers",                 "name": "OpenSea", "category": "crypto"},
-    {"type": "career_page", "id": "https://www.quicknode.com/careers",          "name": "QuickNode", "category": "crypto"},
-    {"type": "career_page", "id": "https://www.gemini.com/careers",             "name": "Gemini", "category": "crypto"},
+    {"type": "ashby",       "id": "quicknode",                                  "name": "QuickNode", "category": "crypto"},
+    {"type": "greenhouse",  "id": "gemini",                                     "name": "Gemini", "category": "crypto"},
     {"type": "career_page", "id": "https://dfinity.org/careers",                "name": "DFINITY", "category": "crypto"},
-    {"type": "career_page", "id": "https://zerion.io/careers",                  "name": "Zerion", "category": "crypto"},
+    {"type": "lever",       "id": "zerion",                                     "name": "Zerion", "category": "crypto"},
     {"type": "career_page", "id": "https://info.arkm.com/careers",              "name": "Arkham", "category": "crypto"},
     {"type": "greenhouse",  "id": "falconx",                                    "name": "FalconX", "category": "crypto"},
     {"type": "career_page", "id": "https://www.blockchain.com/careers",         "name": "Blockchain.com", "category": "crypto"},
     {"type": "career_page", "id": "https://tokenterminal.com/careers",          "name": "Token Terminal", "category": "crypto"},
     {"type": "career_page", "id": "https://taiko.xyz/careers",                  "name": "Taiko", "category": "crypto"},
-    {"type": "career_page", "id": "https://frax.finance/careers",               "name": "Frax", "category": "crypto"},
-    {"type": "career_page", "id": "https://blaize.tech/careers/",               "name": "Blaize", "category": "crypto"},
+    # {"type": "career_page", "id": "https://frax.finance/careers",               "name": "Frax", "category": "crypto"},  # dead 2026-04-23, no working career page
+    {"type": "career_page", "id": "https://cryptocurrencyjobs.co/startups/frax-finance/", "name": "Frax (via aggregator)", "category": "crypto"},
+    {"type": "career_page", "id": "https://www.blaize.com/careers/",            "name": "Blaize", "category": "crypto"},  # was blaize.tech (expired 2026-04-23)
 
     # ── Tracker-derived sources (v0.9.6 discovery) ──
     {"type": "lever",      "id": "tokenmetrics",   "name": "Token Metrics", "category": "crypto"},
@@ -88,8 +89,8 @@ SOURCES = [
     # ── Crypto-aligned sources (watchlist discovery v0.9.11) ──
     # etherfi.io was a scam redirect — switched to Ashby (slug "ether.fi")
     {"type": "ashby",       "id": "ether.fi",                                "name": "Ether.fi", "category": "crypto"},
-    {"type": "career_page", "id": "https://winnables.io/careers",            "name": "Winnables", "category": "crypto"},
-    {"type": "career_page", "id": "https://pod.io/careers",                  "name": "Pod Network", "category": "crypto"},
+    # {"type": "career_page", "id": "https://winnables.io/careers",            "name": "Winnables", "category": "crypto"},  # dead 2026-04-23, domain expired
+    # {"type": "career_page", "id": "https://pod.io/careers",                  "name": "Pod Network", "category": "crypto"},  # dead 2026-04-23, domain gone
     # halborn.io redirects to scam SEO spam; halborn.com is the real domain.
     # Ashby/Lever/Greenhouse APIs all 404, so use the career page directly.
     {"type": "career_page", "id": "https://halborn.com/careers",             "name": "Halborn", "category": "crypto"},
