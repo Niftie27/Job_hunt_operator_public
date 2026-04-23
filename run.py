@@ -18,6 +18,7 @@ That's the whole loop. No magic, no agents, no AI — just fetch, compare, score
 """
 
 import argparse
+import csv
 import os
 import sys
 import time
@@ -63,26 +64,35 @@ def main():
     sources_ok = 0
     sources_failed = 0
     errors = []
+    source_stats: list[dict] = []
 
     for source in sources_to_fetch:
+        url = _resolve_source_url(source)
         try:
             jobs = fetch_source(source)
-            if jobs:
-                all_leads.extend(jobs)
-                sources_ok += 1
-                print(f"     ✓ {source['name']}: {len(jobs)} jobs")
-            else:
-                sources_ok += 1  # succeeded but no jobs (that's ok)
-                print(f"     ✓ {source['name']}: 0 jobs")
+            count = len(jobs) if jobs else 0
+            all_leads.extend(jobs or [])
+            sources_ok += 1
+            print(f"     ✓ {source['name']}: {count} jobs")
+            source_stats.append({
+                "name": source["name"], "type": source["type"],
+                "url": url, "fetched": count, "error": None,
+            })
         except Exception as e:
             sources_failed += 1
             err_msg = f"{source['name']}: {e}"
             errors.append(err_msg)
             print(f"     ✗ {err_msg}")
-        
+            source_stats.append({
+                "name": source["name"], "type": source["type"],
+                "url": url, "fetched": 0, "error": str(e),
+            })
+
         # Be polite: don't hammer APIs too fast
         time.sleep(0.5)
-    
+
+    save_source_health(source_stats, args.mode)
+
     print(f"\n  Total raw leads: {len(all_leads)}")
     print(f"  Sources OK: {sources_ok}, Failed: {sources_failed}")
     
@@ -197,7 +207,90 @@ def _save_leads_csv(leads: list[dict], mode: str) -> str:
     return filepath
 
 
-import csv  # needed for _save_leads_csv
+def _resolve_source_url(source: dict) -> str:
+    t = source["type"]
+    sid = source["id"]
+    if t == "greenhouse":
+        return f"https://boards-api.greenhouse.io/v1/boards/{sid}/jobs?content=true"
+    if t == "ashby":
+        return f"https://api.ashbyhq.com/posting-api/job-board/{sid}"
+    if t == "lever":
+        return f"https://api.lever.co/v0/postings/{sid}?mode=json"
+    if t == "getro":
+        return f"https://{sid}.getro.com/api/v1/jobs"
+    if t == "career_page":
+        return sid
+    if t == "web3career":
+        return f"https://web3.career/{sid}-jobs"
+    if t == "cryptojobslist":
+        return f"https://cryptojobslist.com/{sid}"
+    return ""
+
+
+def save_source_health(source_stats: list[dict], mode: str) -> str:
+    scans_dir = os.path.join(OUTPUT_DIR, "scans")
+    os.makedirs(scans_dir, exist_ok=True)
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filepath = os.path.join(scans_dir, f"source-health{_mode_suffix(mode)}-{date_str}.md")
+
+    active = sorted([s for s in source_stats if s["fetched"] > 0],
+                    key=lambda s: s["fetched"], reverse=True)
+    quiet  = sorted([s for s in source_stats if s["fetched"] == 0 and not s["error"]],
+                    key=lambda s: s["name"].lower())
+    failed = sorted([s for s in source_stats if s["error"]],
+                    key=lambda s: s["name"].lower())
+
+    total_fetched = sum(s["fetched"] for s in source_stats)
+    lines = [
+        f"# Source Health — {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        "",
+        f"**Mode:** {mode}  |  **Sources:** {len(source_stats)}  |  **Total fetched:** {total_fetched}",
+        "",
+        "---",
+        "",
+        "## Active sources (returned jobs)",
+        "",
+        "| Source | Type | URL | Fetched |",
+        "|--------|------|-----|---------|",
+    ]
+    for s in active:
+        lines.append(f"| {s['name']} | {s['type']} | {s['url']} | {s['fetched']} |")
+    if not active:
+        lines.append("*None.*")
+
+    lines += [
+        "",
+        "## Quiet sources (0 jobs — dormant or broken scraper)",
+        "",
+        "| Source | Type | URL |",
+        "|--------|------|-----|",
+    ]
+    for s in quiet:
+        lines.append(f"| {s['name']} | {s['type']} | {s['url']} |")
+    if not quiet:
+        lines.append("*None.*")
+
+    lines += [
+        "",
+        "## Failed sources (fetch errors)",
+        "",
+    ]
+    if failed:
+        lines += [
+            "| Source | Type | URL | Error |",
+            "|--------|------|-----|-------|",
+        ]
+        for s in failed:
+            err = s["error"].replace("|", "\\|").replace("\n", " ")
+            lines.append(f"| {s['name']} | {s['type']} | {s['url']} | {err} |")
+    else:
+        lines.append("*None.*")
+
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    print(f"  Source health: {filepath}")
+    return filepath
+
 
 if __name__ == "__main__":
     main()
