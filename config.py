@@ -86,10 +86,13 @@ SOURCES = [
     {"type": "career_page", "id": "https://devbrother.com/career",           "name": "DevBrother", "category": "crypto"},
 
     # ── Crypto-aligned sources (watchlist discovery v0.9.11) ──
-    {"type": "career_page", "id": "https://etherfi.io/careers",              "name": "Ether.fi", "category": "crypto"},
+    # etherfi.io was a scam redirect — switched to Ashby (slug "ether.fi")
+    {"type": "ashby",       "id": "ether.fi",                                "name": "Ether.fi", "category": "crypto"},
     {"type": "career_page", "id": "https://winnables.io/careers",            "name": "Winnables", "category": "crypto"},
     {"type": "career_page", "id": "https://pod.io/careers",                  "name": "Pod Network", "category": "crypto"},
-    {"type": "career_page", "id": "https://halborn.io/careers",              "name": "Halborn", "category": "crypto"},
+    # halborn.io redirects to scam SEO spam; halborn.com is the real domain.
+    # Ashby/Lever/Greenhouse APIs all 404, so use the career page directly.
+    {"type": "career_page", "id": "https://halborn.com/careers",             "name": "Halborn", "category": "crypto"},
     {"type": "career_page", "id": "https://cryptosec.com/crypto-security-jobs/", "name": "Cryptosec", "category": "crypto"},
     {"type": "career_page", "id": "https://www.digitalasset.com/careers",    "name": "Digital Asset", "category": "crypto"},
     {"type": "ashby",       "id": "braiins",                                 "name": "Braiins", "category": "crypto"},
