@@ -39,8 +39,10 @@ git -c user.name='Niftie27' -c user.email='tom.pazout@gmail.com' \
 git remote remove origin 2>/dev/null || true
 git remote add origin "$PUBLIC_REMOTE"
 
-# Force-push: public history is rewritten on every sync, only one collaborator
-git push --force-with-lease origin main
+# Refresh the lease so --force-with-lease passes (we INTEND to overwrite history,
+# but want to fail if someone else pushed to public between fetch and push).
+git fetch origin main || true
+git push --force-with-lease=main:refs/remotes/origin/main origin main
 
 echo
 echo "✅ Public mirror synced. Commits pushed:"
