@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.DS_Store
+.env
+Job_hunt_operator.code-workspace
+
+# These directories are excluded from this public mirror.
+# They live in the private companion repo instead.
+/data/
+/docs/
+/output/
