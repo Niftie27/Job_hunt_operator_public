@@ -45,9 +45,12 @@ NEEDS_CLASS_PATH   = ROOT / "output" / "scans" / "needs-classification.md"
 
 SHEET_ID  = "1RL60W_ntgdzHLGHHVcK-vM_5cJhKvXFqKRpxhwVp83A"
 SHEET_GID = "0"
+# Google's /export endpoint returns 400 for some "Anyone with link" sheets
+# (known quirk). The gviz/tq endpoint honors the same sharing scope and
+# reliably returns CSV — so we use that.
 SHEET_EXPORT_URL = (
     f"https://docs.google.com/spreadsheets/d/{SHEET_ID}"
-    f"/export?format=csv&gid={SHEET_GID}"
+    f"/gviz/tq?tqx=out:csv&gid={SHEET_GID}"
 )
 
 BEGIN_MARKER = "    # AUTO-GENERATED SOURCES BEGIN — do not edit manually (sync_from_JH_Jobs_links.py rewrites this block)"
