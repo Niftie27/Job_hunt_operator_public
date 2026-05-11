@@ -14,6 +14,7 @@ and how scoring works. Everything else reads from here.
 # Example: https://jobs.lever.co/moonpay           → type="lever", id="moonpay"
 
 SOURCES = [
+    # AUTO-GENERATED SOURCES BEGIN — do not edit manually (sync_from_JH_Jobs_links.py rewrites this block)
     # ── Greenhouse boards ──
     {"type": "greenhouse", "id": "bcbgroup",            "name": "BCB Group", "category": "crypto"},
     {"type": "greenhouse", "id": "bloxstaking",         "name": "Blox Staking / SSV Labs", "category": "crypto"},
@@ -159,6 +160,7 @@ SOURCES = [
     {"type": "career_page", "id": "https://www.paylocity.com/careers/",                         "name": "Paylocity", "category": "general"},
     {"type": "career_page", "id": "https://ppl3.com/careers",                                   "name": "ppl3", "category": "general"},
     {"type": "career_page", "id": "https://libeara.com/careers/",                               "name": "Libeara", "category": "general"},
+    # AUTO-GENERATED SOURCES END
 ]
 
 

@@ -120,6 +120,7 @@ def main():
     
     # ── Step 3: Check against tracker ──
     print("\n📋 Step 3: Checking against outreach tracker...")
+    sync_tracker_from_gdrive()
     tracker = load_tracker(TRACKER_PATH)
     print(f"  Tracker has {len(tracker)} historical entries")
     all_leads = dedupe_against_tracker(all_leads, tracker)
@@ -164,6 +165,130 @@ def main():
     print("  ✅ Done!")
     print(f"  Report: {filepath}")
     print("=" * 60)
+
+
+# ─── Tracker sync from Google Sheets ──────────────────────────────────
+# Source of truth is the JH_Outreach_Tracker sheet (must be shared
+# "Anyone with the link → Viewer"). Sheet schema (14 cols) is narrower
+# than tracker.csv's 24 cols, so we MERGE: Sheet values overwrite, then
+# pipeline-only fields (record_id, tracker_color_status, stage_label,
+# source_type, date fields, review fields) are preserved from the local
+# CSV when matched by lowercase company name.
+
+TRACKER_SHEET_ID = "1-13VFua_KjR5dG78Kq6kw44_qGWLvaMj"
+TRACKER_GID      = "1239549102"
+TRACKER_EXPORT_URL = (
+    f"https://docs.google.com/spreadsheets/d/{TRACKER_SHEET_ID}"
+    f"/export?format=csv&gid={TRACKER_GID}"
+)
+
+PIPELINE_COLUMNS = [
+    "record_id", "company", "company_raw", "result_flag", "person", "role",
+    "url", "date", "extra_dates", "tracker_color_status", "pipeline_status",
+    "stage_label", "source_type", "contact_email", "notes",
+    "fu_person", "fu_role", "fu_url", "fu_email", "fu_status",
+    "response_date", "fu_response_date", "needs_review", "review_notes",
+]
+
+# Columns that come from the Sheet (overwritten on every sync)
+_SHEET_MANAGED = {
+    "company", "company_raw", "person", "role", "url", "contact_email",
+    "pipeline_status", "notes", "fu_person", "fu_role", "fu_url",
+    "fu_email", "fu_status", "response_date", "fu_response_date",
+}
+
+
+def _load_existing_tracker_by_company(path: str) -> dict[str, dict]:
+    """Return {lowercase company: row dict} from current tracker.csv (or {})."""
+    import csv as _csv
+    out: dict[str, dict] = {}
+    if not os.path.exists(path):
+        return out
+    try:
+        with open(path, encoding="utf-8-sig", newline="") as f:
+            for row in _csv.DictReader(f):
+                key = (row.get("company") or "").strip().lower()
+                if key:
+                    out[key] = row
+    except (OSError, _csv.Error):
+        pass
+    return out
+
+
+def sync_tracker_from_gdrive():
+    """Download tracker CSV from Google Sheets, convert to pipeline schema."""
+    import csv as _csv
+    import io
+    import urllib.request
+    import urllib.error
+
+    try:
+        with urllib.request.urlopen(TRACKER_EXPORT_URL, timeout=30) as resp:
+            sheet_bytes = resp.read()
+    except (urllib.error.URLError, TimeoutError) as e:
+        print(f"  ⚠ Tracker sync failed ({e}), using local cache")
+        return
+
+    # Sheet has 2 header rows; row 2 is the real header
+    text = sheet_bytes.decode("utf-8", errors="replace")
+    reader = _csv.reader(io.StringIO(text))
+    rows = list(reader)
+    if len(rows) < 3:
+        print("  ⚠ Tracker sheet returned <3 rows, refusing to overwrite local CSV")
+        return
+
+    header = [h.strip() for h in rows[1]]
+    body = rows[2:]
+
+    # Preserve pipeline-only fields from existing CSV (matched by company)
+    existing = _load_existing_tracker_by_company(TRACKER_PATH)
+
+    new_rows: list[dict] = []
+    for i, raw in enumerate(body, start=1):
+        if len(raw) < len(header):
+            raw = raw + [""] * (len(header) - len(raw))
+        sheet_row = dict(zip(header, raw))
+        company = (sheet_row.get("Company") or "").strip()
+        if not company:
+            continue
+
+        prior = existing.get(company.lower(), {})
+        row = {col: "" for col in PIPELINE_COLUMNS}
+        # Preserve unmanaged pipeline-only fields from previous CSV
+        for col in PIPELINE_COLUMNS:
+            if col not in _SHEET_MANAGED and prior.get(col):
+                row[col] = prior[col]
+
+        # Apply Sheet values
+        row["record_id"]        = prior.get("record_id") or str(i)
+        row["company"]          = company
+        row["company_raw"]      = company
+        row["person"]           = (sheet_row.get("Person") or "").strip()
+        row["role"]             = (sheet_row.get("Role") or "").strip()
+        row["url"]              = (sheet_row.get("URL") or "").strip()
+        row["contact_email"]    = (sheet_row.get("Email") or "").strip()
+        row["pipeline_status"]  = (sheet_row.get("Status") or "").strip()
+        row["notes"]            = (sheet_row.get("Notes") or "").strip()
+        row["fu_person"]        = (sheet_row.get("FU Person") or "").strip()
+        row["fu_role"]          = (sheet_row.get("FU Role") or "").strip()
+        row["fu_url"]           = (sheet_row.get("FU URL") or "").strip()
+        row["fu_email"]         = (sheet_row.get("FU Email") or "").strip()
+        row["fu_status"]        = (sheet_row.get("FU Status") or "").strip()
+        row["response_date"]    = (sheet_row.get("Response Date") or "").strip()
+        row["fu_response_date"] = (sheet_row.get("FU Response Date") or "").strip()
+        new_rows.append(row)
+
+    if len(new_rows) < 10:
+        print(f"  ⚠ Tracker sync produced only {len(new_rows)} rows, refusing to overwrite")
+        return
+
+    os.makedirs(os.path.dirname(TRACKER_PATH), exist_ok=True)
+    with open(TRACKER_PATH, "w", encoding="utf-8", newline="") as f:
+        writer = _csv.DictWriter(f, fieldnames=PIPELINE_COLUMNS)
+        writer.writeheader()
+        for row in new_rows:
+            writer.writerow(row)
+    print(f"  ✓ Tracker synced from Google Sheets ({len(new_rows)} rows)")
 
 
 def _state_path(mode: str) -> str:
