@@ -65,11 +65,12 @@ in this repo (not the file in the sibling clone) and then sync.
 - `data/state-all.json` — all-mode state
 - If user only uses --mode crypto, state-all.json is dormant. Could clean up if not used long-term.
 
-### Watchlist count anomaly
-- Pre-migration: user reports ~1541 entries in `data/watchlist.txt`
-- Post-migration: 162 entries
-- Need to verify: was 1541 real, or misremembered? Check `git show 2961a29~1:data/watchlist.txt | wc -l`.
-- If data loss real: recover from git history, re-import to Sheet as `name_only` rows.
+### Watchlist count — resolved
+Verified via `git show 2961a29~1:data/watchlist.txt | wc -l` = 162.
+No data loss. Earlier "1541 entries" was likely confusion with planned
+deep-research expansion (declined — quality over quantity) or with 
+cryptocurrencyjobs.co aggregator coverage (~1500 companies via 5 category 
+slugs in config.py). Current 162 is the actual sustained count.
 
 ### Source health terminology
 - `output/scans/source-health-YYYY-MM-DD.md` — per-source fetch report
