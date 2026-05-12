@@ -96,6 +96,42 @@ def _parse_default_location(notes: str) -> str:
     return m.group(1).strip() if m else ""
 
 
+# ── URL → Type auto-classification ───────────────────────────────────
+# Applied only when the Sheet's Type column is empty. Manual Type values
+# in the Sheet always win.
+
+_CAREER_KEYWORDS = ("/careers", "/career", "/jobs", "/positions",
+                    "/openings", "/open-roles", "/join", "/work-with-us")
+
+
+def _classify_url(url: str) -> str:
+    """Infer a Sheet Type value from a URL. Returns '' if no rule matches."""
+    if not url:
+        return "name_only"
+    u = url.lower().strip()
+
+    # Social platforms (need separate scrapers / Apify)
+    if "linkedin.com" in u:
+        return "pending_apify"
+    if "twitter.com/" in u or "x.com/" in u:
+        return "pending_parser"
+
+    # Known ATS / aggregator hosts → "provider:slug" style
+    ps = _parse_provider_slug(url)
+    if ps:
+        provider, _ = ps
+        if provider in _ATS_PROVIDERS:
+            return "ats"
+        if provider in _AGGREGATOR_PROVIDERS:
+            return "aggregator"
+
+    # Career-page-like paths
+    if u.startswith(("http://", "https://")) and any(kw in u for kw in _CAREER_KEYWORDS):
+        return "career_page"
+
+    return ""
+
+
 # ── Sheet download ───────────────────────────────────────────────────
 
 def _download_sheet() -> list[dict]:
@@ -256,11 +292,21 @@ def main():
         "pending_apify": [], "pending_parser": [], "dead": [],
     }
     needs_class: list[dict] = []
+    classified_count = 0
+    excluded_count = 0
 
     for r in rows:
         rtype = (r.get("Type") or "").strip().lower()
         name  = (r.get("Company") or "").strip()
+        url   = (r.get("URL") or "").strip()
         notes = (r.get("Notes") or "").strip()
+
+        # If Type is blank, try to infer from URL
+        if not rtype:
+            rtype = _classify_url(url)
+            if rtype:
+                classified_count += 1
+                r["Type"] = rtype  # update copy so _row_to_source sees it
 
         if rtype in {"career_page", "career_page_jina", "ats", "aggregator"}:
             entry = _row_to_source(r)
@@ -273,6 +319,10 @@ def main():
                 watchlist.append(name)
         elif rtype in {"pending_apify", "pending_parser", "dead"}:
             buckets[rtype].append((name, notes))
+        elif rtype == "excluded":
+            # Consciously excluded (agency/corp/in_config/umbrella/unfit).
+            # Stays in the Sheet as reference; not surfaced anywhere.
+            excluded_count += 1
         else:
             needs_class.append(r)
 
@@ -296,6 +346,10 @@ def main():
     print(f"✅ data/watchlist.txt rewritten: {len(set(watchlist))} companies")
     print(f"✅ {PENDING_PATH.relative_to(ROOT)}: "
           f"{sum(len(v) for v in buckets.values())} archived/pending entries")
+    if classified_count:
+        print(f"ℹ  auto-classified {classified_count} rows from URL")
+    if excluded_count:
+        print(f"ℹ  {excluded_count} excluded rows skipped (reference only)")
     if needs_class:
         print(f"⚠  {NEEDS_CLASS_PATH.relative_to(ROOT)}: "
               f"{len(needs_class)} rows need classification in the Sheet")

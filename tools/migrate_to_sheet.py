@@ -115,18 +115,14 @@ def main():
         seen.add(key)
         writer.writerow([company, "", "name_only", "crypto", ""])
 
-    # Watchlist (archived) → dead / pending / etc.
+    # Watchlist (archived) → excluded (we consciously chose not to monitor).
+    # Reserve `dead` for URLs that 404 / domain expired.
     for company, reason in _load_watchlist_archived():
         key = (company.lower(), "")
         if key in seen:
             continue
         seen.add(key)
-        type_map = {
-            "corp": "dead", "bank": "dead", "agency": "dead",
-            "in_config": "dead", "umbrella": "dead", "unfit": "dead",
-        }
-        sheet_type = type_map.get(reason, "dead")
-        writer.writerow([company, "", sheet_type, "general", f"archived: {reason}"])
+        writer.writerow([company, "", "excluded", "general", f"archived: {reason}"])
 
 
 if __name__ == "__main__":

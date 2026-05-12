@@ -1,6 +1,9 @@
 # Job Hunt Operator
 
-Automated job discovery pipeline for blockchain/web3 engineering roles. Fetches from 42+ sources, classifies by role type and seniority, tracks state across runs, and produces daily reports.
+Automated job discovery pipeline for blockchain/web3 engineering roles. Fetches from 95+ sources, classifies by role type and seniority, tracks state across runs, and produces daily reports.
+
+> 📘 For detailed system reference, see [docs/SYSTEM_GUIDE.md](docs/SYSTEM_GUIDE.md).
+> For daily usage, see [docs/WORKFLOW.md](docs/WORKFLOW.md).
 
 ## How it works
 
