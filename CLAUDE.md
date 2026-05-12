@@ -47,3 +47,44 @@ in this repo (not the file in the sibling clone) and then sync.
 | Run with general-tech sources too | `python3 run.py --mode all` |
 | Sync public mirror | `bash tools/sync_public.sh` |
 | See which sources are quiet | `output/scans/source-health-YYYY-MM-DD.md` |
+
+## Open Questions & Cleanup TODO (post-v0.9.21)
+
+### Files to investigate / potentially remove
+- `docs/archive/JH_Jobs_links.md` — old version, superseded by Google Sheet
+- `docs/source-library.md` — predates current architecture, audit content
+- `output/scans/jh_jobs_sources_seed.csv` — one-shot migration artifact, no longer needed
+- `data/watchlist-archived.txt` — superseded by Sheet's `excluded` Type, but still on disk
+
+### Suspicious empty files
+- `output/scans/needs-classification.md` — empty because auto-classify works; verify by adding intentionally bad URL
+- `output/scans/pending-integrations.md` — empty BUT Sheet has rows with `pending_apify` Type (LinkedIn URLs). Why aren't they in the log? Check sync routing logic.
+
+### State file question
+- `data/state.json` — crypto mode state (current)
+- `data/state-all.json` — all-mode state
+- If user only uses --mode crypto, state-all.json is dormant. Could clean up if not used long-term.
+
+### Watchlist count anomaly
+- Pre-migration: user reports ~1541 entries in `data/watchlist.txt`
+- Post-migration: 162 entries
+- Need to verify: was 1541 real, or misremembered? Check `git show 2961a29~1:data/watchlist.txt | wc -l`.
+- If data loss real: recover from git history, re-import to Sheet as `name_only` rows.
+
+### Source health terminology
+- `output/scans/source-health-YYYY-MM-DD.md` — per-source fetch report
+- Three sections: active (jobs returned), quiet (0 jobs, no error), failed (error)
+- Not "health" in monitoring sense — more like "yield per source per run"
+- Consider renaming to `source-yield-...` for clarity (future refactor)
+
+### Architecture simplification candidates
+- Can `JH_Jobs_Sources` Sheet replace `watchlist.txt` entirely? (name_only rows already serve that purpose)
+- Can `find_tracker_careers.py` operate directly on Sheet rows with empty URL instead of reading watchlist.txt?
+- If yes: delete watchlist.txt + watchlist-archived.txt, simplify dispatcher.
+
+### PostgreSQL migration roadmap (Phase 2)
+- Move state.json + tracker.csv → Postgres tables
+- Schema: companies, jobs, outreach, sources, scans
+- Host: Supabase (free tier, managed)
+- Trigger: when JSON state hits multi-MB or query needs arise
+- Estimated effort: 2-3 weeks incremental work alongside running pipeline
