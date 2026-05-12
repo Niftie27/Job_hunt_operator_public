@@ -149,11 +149,18 @@ def _download_sheet() -> list[dict]:
 # ── Row routing ──────────────────────────────────────────────────────
 
 def _row_to_source(row: dict) -> dict | None:
-    """Convert a Sheet row to a SOURCES entry, or None if not routable."""
+    """Convert a Sheet row to a SOURCES entry, or None if not routable.
+
+    Only Company is strictly required. URL, Type, Category, Notes are all
+    optional — Type is auto-classified (see _classify_url), Category
+    defaults to 'crypto', empty URL routes to name_only.
+    """
     name     = (row.get("Company") or "").strip()
     url      = (row.get("URL")     or "").strip()
     rtype    = (row.get("Type")    or "").strip().lower()
-    category = (row.get("Category") or "crypto").strip() or "crypto"
+    # Category defaults to 'crypto' if blank/missing; normalise case so
+    # 'Crypto' / 'CRYPTO' don't slip past run.py's case-sensitive filter.
+    category = (row.get("Category") or "crypto").strip().lower() or "crypto"
     notes    = (row.get("Notes")   or "").strip()
 
     if not name:
